@@ -1,0 +1,17 @@
+---
+title: "Chapter 6: Linear Model Selection and Regularization"
+subtitle: "An Introduction to Statistical Learning with Applications in R"
+author: "Alfredo Hernández"
+date: "10 April 2018"
+output: html_notebook
+---
+
+# Exercise 3
+
+# Exercise 5
+
+# Exercise 8
+
+# Exercise 9 (a,b,c,d,g)
+
+# Exercise 10
