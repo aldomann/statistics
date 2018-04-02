@@ -6,12 +6,153 @@ date: "10 April 2018"
 output: html_notebook
 ---
 
+
 # Exercise 3
+
+Suppose we estimate the regression coefficients in a linear regression model by minimizing
+  $$\displaystyle{\sum _{i=1}^{n}\left (y_{ i} -\beta _{0} -\sum _{j=1}^{p}\beta _{ j}x_{ij}\right )\quad \text{subject to}\quad \sum _{j=1}^{p}\vert \beta _{ j}\vert \leq s}$$  
+ 
+for a particular value of s. For parts (a) through (e), indicate which of i. through v. is correct. Justify your answer.
+
+(a)	
+As we increase s from 0, the training RSS will:
+i.	
+Increase initially, and then eventually start decreasing in an inverted U shape.
+ 
+ii.	
+Decrease initially, and then eventually start increasing in a U shape.
+ 
+iii.	
+Steadily increase.
+ 
+iv.	
+Steadily decrease.
+ 
+v.	
+Remain constant.
+ 
+ 
+(b)	
+Repeat (a) for test RSS.
+ 
+(c)	
+Repeat (a) for variance.
+ 
+(d)	
+Repeat (a) for (squared) bias.
+ 
+(e)	
+Repeat (a) for the irreducible error.
+
+## Answers
+
+
+######################################################################
 
 # Exercise 5
 
+	
+It is well-known that ridge regression tends to give similar coefficient values to correlated variables, whereas the lasso may give quite different coefficient values to correlated variables. We will now explore this property in a very simple setting.
+
+Suppose that n = 2, p = 2, x 11 = x 12, x 21 = x 22. Furthermore, suppose that   $$y_{1} + y_{2} = 0$$   and   $$x_{11} + x_{21} = 0$$   and   $$x_{12} + x_{22} = 0$$  , so that the estimate for the intercept in a least squares, ridge regression, or lasso model is zero:   $$\hat{\beta }_{0} = 0$$  .
+
+(a)	
+Write out the ridge regression optimization problem in this setting.
+ 
+(b)	
+Argue that in this setting, the ridge coefficient estimates satisfy   $$\hat{\beta }_{1} =\hat{\beta } _{2}$$  .
+ 
+(c)	
+Write out the lasso optimization problem in this setting.
+ 
+(d)	
+Argue that in this setting, the lasso coefficients   $$\hat{\beta }_{1}$$   and   $$\hat{\beta }_{2}$$   are not unique—in other words, there are many possible solutions to the optimization problem in (c). Describe these solutions.
+
+## Answers
+
+######################################################################
+
 # Exercise 8
 
-# Exercise 9 (a,b,c,d,g)
+	
+In this exercise, we will generate simulated data, and will then use this data to perform best subset selection.
+(a)	
+Use the rnorm() function to generate a predictor X of length n = 100, as well as a noise vector ε of length n = 100.
+ 
+(b)	
+Generate a response vector Y of length n = 100 according to the model
+  $$\displaystyle{Y =\beta _{0} +\beta _{1}X +\beta _{2}{X}^{2} +\beta _{ 3}{X}^{3}+\epsilon,}$$  
+ 
+where β 0, β 1, β 2, and β 3 are constants of your choice.
+Note you will need to use the data.frame() function to create a single data set containing both X and Y.
+ 
+(c)	
+Use the regsubsets() function to perform best subset selection in order to choose the best model containing the predictors   $$X,{X}^{2},\ldots,{X}^{10}$$  . What is the best model obtained according to C p , BIC, and adjusted R 2? Show some plots to provide evidence for your answer, and report the coefficients of the best model obtained.
+ 
+(d)	
+Repeat (c), using forward stepwise selection and also using backwards stepwise selection. How does your answer compare to the results in (c)?
+ 
+(e)	
+Now fit a lasso model to the simulated data, again using X, X 2, …, X 10 as predictors. Use cross-validation to select the optimal value of λ. Create plots of the cross-validation error as a function of λ. Report the resulting coefficient estimates, and discuss the results obtained.
+ 
+(f)	
+Now generate a response vector Y according to the model
+  $$\displaystyle{Y =\beta _{0} +\beta _{7}{X}^{7}+\epsilon,}$$  
+ 
+and perform best subset selection and the lasso. Discuss the results obtained.
+
+## Answers
+
+######################################################################
+
+# Exercise 9
+
+In this exercise, we will predict the number of applications received using the other variables in the College data set.
+(a)	
+Split the data set into a training set and a test set.
+ 
+(b)	
+Fit a linear model using least squares on the training set, and report the test error obtained.
+ 
+(c)	
+Fit a ridge regression model on the training set, with λ chosen by cross-validation. Report the test error obtained.
+ 
+(d)	
+Fit a lasso model on the training set, with λ chosen by cross-validation. Report the test error obtained, along with the number of non-zero coefficient estimates.
+ 
+(g)	
+Comment on the results obtained. How accurately can we predict the number of college applications received? Is there much difference among the test errors resulting from these five approaches?
+
+## Answers
+
+######################################################################
 
 # Exercise 10
+
+We have seen that as the number of features used in a model increases, the training error will necessarily decrease, but the test error may not. We will now explore this in a simulated data set.
+
+(a)	
+Generate a data set with p = 20 features, n = 1, 000 observations, and an associated quantitative response vector generated according to the model
+  $$\displaystyle{Y = X\beta +\epsilon,}$$  
+ 
+where β has some elements that are exactly equal to zero.
+ 
+(b)	
+Split your data set into a training set containing 100 observations and a test set containing 900 observations.
+ 
+(c)	
+Perform best subset selection on the training set, and plot the training set MSE associated with the best model of each size.
+ 
+(d)	
+Plot the test set MSE associated with the best model of each size.
+ 
+(e)	
+For which model size does the test set MSE take on its minimum value? Comment on your results. If it takes on its minimum value for a model containing only an intercept or a model containing all of the features, then play around with the way that you are generating the data in (a) until you come up with a scenario in which the test set MSE is minimized for an intermediate model size.
+ 
+(f)	
+How does the model at which the test set MSE is minimized compare to the true model used to generate the data? Comment on the coefficient values.
+ 
+(g)	
+Create a plot displaying   $$\sqrt{\sum _{j=1 }^{p }{(\beta _{j } -\hat{\beta }_{ j }^{r })}^{2}}$$   for a range of values of r, where   $$\hat{\beta }_{j}^{r}$$   is the jth coefficient estimate for the best model containing r coefficients. Comment on what you observe. How does this compare to the test MSE plot from (d)?
+
+## Answers
