@@ -307,7 +307,9 @@ plot_statistics("adjr2", max.adjr2)
 
 As we can see from the results, with $C_{p}$, BIC, and adjusted $R^{2}$ criteria, 3 variable models are picked. The expression is the following:
 ```{r}
-coefficients(mod.full, id = 3)
+coefficients(mod.full, id = min.cp)
+coefficients(mod.full, id = min.bic)
+coefficients(mod.full, id = max.adjr2)
 ```
 
 All three statistics pick $X^{5}$ over $X^{3}$. The remaining coefficients are quite close to the original $\beta_{i}$ of the $Y$ response.
