@@ -19,7 +19,7 @@ library(tidyverse)
 
 Suppose we estimate the regression coefficients in a linear regression model by minimising
 $$
-\sum _{i=1}^{n}\left (y_{i} -\beta _{0} -\sum _{j=1}^{p}\beta _{j}x_{ij}\right )\quad \text{subject to}\quad \sum _{j=1}^{p}\vert \beta _{j}\vert \leq s
+\sum_{i=1}^{n}\left (y_{i} -\beta_{0} -\sum_{j=1}^{p}\beta_{j}x_{ij}\right )\quad \text{subject to}\quad \sum_{j=1}^{p}\vert \beta_{j}\vert \leq s
 $$
 
 for a particular value of $s$. For parts (a) through (e), indicate which of i. through v. is correct. Justify your answer.
@@ -83,14 +83,12 @@ Suppose that $n = 2$, $p = 2$, $x_{11} = x_{12}$, $x_{21} = x_{2
 ### Exercise 5 (a)
 
 A general form of Ridge regression optimisation looks like
-
 $$
 \text{Minimise:} \quad 
 \sum\limits_{i=1}^{n} {(y_i - \hat{\beta}_0 - \sum\limits_{j=1}^{p} {\hat{\beta}_jx_j} )^2} + \lambda \sum\limits_{j=1}^{p} \hat{\beta}_{j}^{2} .
 $$
 
 In this case, $\hat{\beta}_0 = 0$ and $n = p = 2$. So, the optimisation looks like:
-
 $$
 \boxed{
 \text{Minimise:} \quad
@@ -200,7 +198,9 @@ In this exercise, we will generate simulated data, and will then use this data t
 (a) Use the `rnorm()` function to generate a predictor $X$ of length $n = 100$, as well as a noise vector $\epsilon$ of length $n = 100$.
  
 (b) Generate a response vector $Y$ of length $n = 100$ according to the model
-$$\displaystyle{Y =\beta _{0} +\beta _{1}X +\beta _{2}{X}^{2} +\beta _{3}{X}^{3}+\epsilon,}$$  
+$$
+Y = \beta_{0} + \beta_{1}X + \beta_{2}{X}^{2} + \beta_{3}{X}^{3} + \epsilon,
+$$
  
 where $\beta_{0}$, $\beta_{1}$, $\beta_{2}$, and $\beta_{3}$ are constants of your choice.
  
@@ -213,7 +213,7 @@ where $\beta_{0}$, $\beta_{1}$, $\beta_{2}$, and $\beta_{3}$ are constants of yo
 (f) Now generate a response vector $Y$ according to the model
 
 $$
-Y = \beta _{0} + \beta_{7} {X}^{7} + \epsilon,
+Y = \beta_{0} + \beta_{7} {X}^{7} + \epsilon,
 $$  
  
 and perform best subset selection and the lasso. Discuss the results obtained.
@@ -254,8 +254,6 @@ ggplot(data = tibble(X,Y)) +
 	geom_point(aes(x = X, y = Y))
 ```
 
-
-
 ### Exercise 8 (c)
 
 We need the `leaps` package to use the `regsubsets()` function:
@@ -290,7 +288,7 @@ plot_statistics <- function(summary, stat, opt.stat, title.str = NULL) {
 	
 	gg <- ggplot(tibble(x = seq_along(variable), y = variable)) +
 		geom_line(aes(x = x, y = y)) +
-		geom_point(aes(x = opt.stat, y = variable[min.cp]), colour = "red") +
+		geom_point(aes(x = opt.stat, y = variable[opt.stat]), colour = "red") +
 		scale_x_continuous(breaks = seq(1:10)) +
 		labs(x = "Subset Size", y = paste("Best Subset of", stat))
 	
@@ -310,12 +308,15 @@ plot_statistics(mod.summary, "AdjR2", max.adjr2)
 ```
 
 
-As we can see from the results, with $C_{p}$, $BIC$, and adjusted $R^{2}$ criteria, 3-variable models are picked. The expression for this 3-variable model is the following:
+As we can see from the results, with $C_{p}$, $BIC$, and adjusted $R^{2}$ criteria, 4, 3, 4-variable models are picked, respectively. The expression for this 4-variable and 3-variable model are the following, respectively:
 ```{r}
+# 4-variable model
 coefficients(mod.full, id = min.cp)
+# 3-variable model
+coefficients(mod.full, id = min.bic)
 ```
 
-All three statistics pick $X^{5}$ over $X^{3}$. The remaining coefficients are quite close to the original $\beta_{i}$ of the $Y$ response.
+As we can see, the $BIC$ statistic selects the correct $\beta_{0} + \beta_{1}X + \beta_{2}{X}^{2} + \beta_{3}{X}^{3}$ model, whilst the $C_{p}$ and adjusted $R^{2}$ statistics additionally pick $X^{5}$.
 
 ### Exercise 8 (d)
 First of all, we need to fit forward and backward stepwise models to the data using the `regsubsets()` specifying the desired method:
@@ -340,10 +341,12 @@ Now we can get the summary of the best selection using both models:
 As we did before, we find the model or subset size for the best $C_{p}$, $BIC$, and adjusted $R^{2}$ coefficients:
 ```{r}
 min.cp.fwd <- which.min(fwd.summary$cp)
-min.cp.bwd <- which.min(bwd.summary$cp)
 min.bic.fwd <- which.min(fwd.summary$bic)
-min.bic.bwd <- which.min(bwd.summary$bic)
 max.adjr2.fwd <- which.max(fwd.summary$adjr2)
+```
+```{r}
+min.cp.bwd <- which.min(bwd.summary$cp)
+min.bic.bwd <- which.min(bwd.summary$bic)
 max.adjr2.bwd <- which.max(bwd.summary$adjr2)
 ```
 
@@ -357,14 +360,7 @@ plot_statistics(bwd.summary, "BIC", min.bic.bwd, "Backward Stepwise")
 plot_statistics(bwd.summary, "AdjR2", max.adjr2.bwd, "Backward Stepwise")
 ```
 
-As we can see from the results, using the backward stepwise method with $C_{p}$, $BIC$, and adjusted $R^{2}$ criteria, 3-variable models are picked, as it was with the exhaustive method. Again, all three statistics pick $X^{5}$ over $X^{3}$.
-
-For the forward stepwise model, though, for the $C_{p}$, $BIC$, and the adjusted $R^{2}$ criteria we get a 4, 3, and 4-variable model, respectively. The 4-variable model has the following expression:
-```{r}
-coefficients(mod.fwd, id = min.cp.fwd)
-```
-
-In this case, instead of picking $X^{5}$ over $X^{3}$, $X^{5}$ is an additional term to the selected predictors of the model.
+As we can see from the results, using the forward and backward stepwise methods we get the same exact results: the $C_{p}$ and adjusted $R^{2}$ statistics pick $X^{5}$ additionally to $X^{0}$, $X^{1}$, $X^{2}$, and $X^{3}$ whilst for the $BIC$ selects the correct model.
 
 ### Exercise 8 (e)
 
@@ -375,12 +371,14 @@ library(glmnet)
 
 ```{r}
 xmat <- model.matrix(Y ~ poly(X, 10, raw = T), 
-											data = tibble(Y,X))[, -1]
-mod.lasso <-  cv.glmnet(xmat, Y, alpha = 1)
+										 data = tibble(Y,X))[, -1]
+mod.lasso <- cv.glmnet(xmat, Y, alpha = 1)
 ```
+Notice that we use `[, -1]` to get rid of the intercept column.
 
+We can easily find out the optimal $\lambda$:
 ```{r}
-(best.lambda <-  mod.lasso$lambda.min)
+(best.lambda <- mod.lasso$lambda.min)
 ```
 
 We can see the lasso model in the following plot:
@@ -389,14 +387,67 @@ plot(mod.lasso)
 ```
 
 
-Now, the final step is to use the `predict()` function with the lasso model:
+Now, the final step is to use the `predict()` function with the lasso model to find the coefficients:
 ```{r}
 predict(mod.lasso, s = best.lambda, type="coefficients")
 ```
 
-
+Let's notice that lasso predicts $\beta_{0} + \beta_{1}X + \beta_{2}{X}^{2} + \beta_{3}{X}^{3} + \beta_{10}{X}^{10}$, but $\beta_{10}$ is almost negligible.
 
 ### Exercise 8 (f)
+
+First of all, we create a new $Y$ response with different $\beta_{7} = 7$:
+```{r}
+beta7 = 7
+Y2 = beta0 + beta7 * X^7 + epsilon
+```
+
+```{r}
+mod2.full <- regsubsets(Y2 ~ poly(X, 10, raw = T), 
+												data = tibble(Y2, X), 
+												nvmax = 10)
+mod2.summary <- summary(mod2.full)
+```
+
+```{r}
+min2.cp <- which.min(mod2.summary$cp)
+min2.bic <- which.min(mod2.summary$bic)
+max2.adjr2 <- which.max(mod2.summary$adjr2)
+```
+
+```{r}
+plot_statistics(mod2.summary, "Cp", min2.cp)
+plot_statistics(mod2.summary, "BIC", min2.bic)
+plot_statistics(mod2.summary, "AdjR2", max2.adjr2)
+```
+
+```{r}
+# 2-variable model
+coefficients(mod2.full, id = min2.cp)
+# 1-variable model
+coefficients(mod2.full, id = min2.bic)
+# 4-variable model
+coefficients(mod2.full, id = max2.adjr2)
+```
+What we see from the previous results is that $BIC$ statistic picks the most accurate 1-variable model with matching coefficients, whilst other criteria pick additional variables.
+
+Let us use now use lasso to find the best model:
+```{r}
+xmat2 <- model.matrix(Y2 ~ poly(X, 10, raw = T), 
+										 data = tibble(Y2, X))[, -1]
+mod2.lasso <-  cv.glmnet(xmat2, Y2, alpha = 1)
+```
+
+```{r}
+(best2.lambda = mod2.lasso$lambda.min)
+```
+
+```{r}
+best.model2 <-  glmnet(xmat2, Y2, alpha = 1)
+predict(best.model2, s = best.lambda, type = "coefficients")
+```
+As we can see, lasso also picks the best 1-variable model, but the intercept coefficient does not give a good estimation of the real value of $\beta_{0}$.
+
 
 ######################################################################
 
@@ -447,7 +498,7 @@ where $\beta$ has some elements that are exactly equal to zero.
 (f)	
 How does the model at which the test set MSE is minimized compare to the true model used to generate the data? Comment on the coefficient values.
  
-(g) Create a plot displaying $\sqrt{\sum _{j=1}^{p}{(\beta _{j} -\hat{\beta}_{j}^{r})}^{2}}$ for a range of values of $r$, where $\hat{\beta}_{j}^{r}$ is the jth coefficient estimate for the best model containing $r$ coefficients. Comment on what you observe. How does this compare to the test MSE plot from (d)?
+(g) Create a plot displaying $\sqrt{\sum_{j=1}^{p}{(\beta_{j} -\hat{\beta}_{j}^{r})}^{2}}$ for a range of values of $r$, where $\hat{\beta}_{j}^{r}$ is the jth coefficient estimate for the best model containing $r$ coefficients. Comment on what you observe. How does this compare to the test MSE plot from (d)?
 
 ## Answers
 
