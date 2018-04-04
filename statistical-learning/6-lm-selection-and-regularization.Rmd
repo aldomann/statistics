@@ -8,6 +8,11 @@ output:
     toc: yes
 ---
 
+```{r message=FALSE, include=FALSE}
+library(tidyverse)
+```
+
+
 
 # Exercise 3
 
@@ -197,9 +202,8 @@ In this exercise, we will generate simulated data, and will then use this data t
 $$\displaystyle{Y =\beta _{0} +\beta _{1}X +\beta _{2}{X}^{2} +\beta _{3}{X}^{3}+\epsilon,}$$  
  
 where $\beta_{0}$, $\beta_{1}$, $\beta_{2}$, and $\beta_{3}$ are constants of your choice.
-Note you will need to use the data.frame() function to create a single data set containing both $X$ and $Y$.
  
-(c) Use the `regsubsets()` function to perform best subset selection in order to choose the best model containing the predictors $X, {X}^{2}, \dots, {X}^{10}$. What is the best model obtained according to $C_{p}$ , BIC, and adjusted $R^{2}$? Show some plots to provide evidence for your answer, and report the coefficients of the best model obtained. Note you will need to use `data.frame()` function to create a single data set containing both $X$ and $Y$.
+(c) Use the `regsubsets()` function to perform best subset selection in order to choose the best model containing the predictors $X, {X}^{2}, \dots, {X}^{10}$. What is the best model obtained according to $C_{p}$, BIC, and adjusted $R^{2}$? Show some plots to provide evidence for your answer, and report the coefficients of the best model obtained.
  
 (d) Repeat (c), using forward stepwise selection and also using backwards stepwise selection. How does your answer compare to the results in (c)?
  
@@ -207,17 +211,106 @@ Note you will need to use the data.frame() function to create a single data set 
  
 (f) Now generate a response vector $Y$ according to the model
 
-$$Y = \beta _{0} + \beta_{7} {X}^{7} + \epsilon,$$  
+$$
+Y = \beta _{0} + \beta_{7} {X}^{7} + \epsilon,
+$$  
  
 and perform best subset selection and the lasso. Discuss the results obtained.
 
 ## Answers
 
 ### Exercise 8 (a)
+To be consistent with out results, we need to set a seed first:
+```{r}
+set.seed(1)
+```
+
+Now we define the predictor $X$ and the noise $\epsilon$:
+```{r}
+X <- rnorm(100)
+epsilon <- rnorm(100)
+```
 
 ### Exercise 8 (b)
 
+First of all, we define our $\beta$ coefficients:
+```{r}
+beta0 = 3
+beta1 = 1
+beta2 = -2
+beta3 = 0.5
+```
+
+Now we define our $Y$ response:
+```{r}
+Y <- beta0 + beta1 * X + beta2 * X^2 + beta3 * X^3 + epsilon
+```
+
+We can see our function below:
+
+```{r}
+ggplot(data = tibble(X,Y)) +
+	geom_point(aes(x = X, y = Y))
+# qplot(X,Y)
+```
+
+
+
 ### Exercise 8 (c)
+
+We need the `leaps` package to use the `regsubsets()` function:
+```{r}
+library(leaps)
+```
+
+Now we use `regsubsets()` to select best model having  polynomial of $X$ of degree 10:
+```{r}
+mod.full <- regsubsets(Y ~ poly(X, 10, raw = T), 
+													data = tibble(Y, X), 
+													nvmax = 10)
+```
+Note that we use the `poly()` function with the `raw = TRUE` option to use raw polynomials instead of orthogonal ones. 
+
+Now we can get the summary of the best selection using an exhaustive algorithm (the default method of `regsubsets()`):
+```{r}
+(mod.summary <- summary(mod.full))
+```
+
+Find the model size for best $C_{p}$, BIC, and adjusted $R^{2}$
+```{r}
+min.cp <- which.min(mod.summary$cp)
+min.bic <- which.min(mod.summary$bic)
+max.adjr2 <- which.max(mod.summary$adjr2)
+```
+
+Now we define a `ggplot2` function to simplify the process of exploring the results:
+```{r}
+plot_statistics <- function(stat, opt.stat) {
+	variable <- mod.summary[[stat]]
+	
+	gg <- ggplot(tibble(x = seq_along(variable), y = variable)) +
+		geom_line(aes(x = x, y = y)) +
+		geom_point(aes(x = opt.stat, y = variable[min.cp]), colour = "red") +
+		scale_x_continuous(breaks = seq(1:10)) +
+		labs(x = "Number of poly(X) or model size", y = paste("Best subset of", stat))
+	return(gg)
+}
+```
+
+Now we compare the three statistics as a function of thee model size:
+```{r}
+plot_statistics("cp", min.cp)
+plot_statistics("bic", min.bic)
+plot_statistics("adjr2", max.adjr2)
+```
+
+
+As we can see from the results, with $C_{p}$, BIC, and adjusted $R^{2}$ criteria, 3 variable models are picked. The expression is the following:
+```{r}
+coefficients(mod.full, id = 3)
+```
+
+All three statistics pick $X^{5}$ over $X^{3}$. The remaining coefficients are quite close to the original $\beta_{i}$ of the $Y$ response.
 
 ### Exercise 8 (d)
 
