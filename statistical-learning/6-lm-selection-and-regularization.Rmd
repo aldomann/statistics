@@ -6,6 +6,7 @@ date: "10 April 2018"
 output: 
   html_notebook: 
     toc: yes
+    toc_depth: 2
 ---
 
 ```{r message=FALSE, include=FALSE}
@@ -203,7 +204,7 @@ $$\displaystyle{Y =\beta _{0} +\beta _{1}X +\beta _{2}{X}^{2} +\beta _{3}{X}^{3}
  
 where $\beta_{0}$, $\beta_{1}$, $\beta_{2}$, and $\beta_{3}$ are constants of your choice.
  
-(c) Use the `regsubsets()` function to perform best subset selection in order to choose the best model containing the predictors $X, {X}^{2}, \dots, {X}^{10}$. What is the best model obtained according to $C_{p}$, BIC, and adjusted $R^{2}$? Show some plots to provide evidence for your answer, and report the coefficients of the best model obtained.
+(c) Use the `regsubsets()` function to perform best subset selection in order to choose the best model containing the predictors $X, {X}^{2}, \dots, {X}^{10}$. What is the best model obtained according to $C_{p}$, $BIC$, and adjusted $R^{2}$? Show some plots to provide evidence for your answer, and report the coefficients of the best model obtained.
  
 (d) Repeat (c), using forward stepwise selection and also using backwards stepwise selection. How does your answer compare to the results in (c)?
  
@@ -266,8 +267,8 @@ library(leaps)
 Now we use `regsubsets()` to select best model having  polynomial of $X$ of degree 10:
 ```{r}
 mod.full <- regsubsets(Y ~ poly(X, 10, raw = T), 
-													data = tibble(Y, X), 
-													nvmax = 10)
+											 data = tibble(Y, X), 
+											 nvmax = 10)
 ```
 Note that we use the `poly()` function with the `raw = TRUE` option to use raw polynomials instead of orthogonal ones. 
 
@@ -276,7 +277,7 @@ Now we can get the summary of the best selection using an exhaustive algorithm (
 (mod.summary <- summary(mod.full))
 ```
 
-Find the model size for best $C_{p}$, BIC, and adjusted $R^{2}$
+Now we find the model or subset size for the best $C_{p}$, $BIC$, and adjusted $R^{2}$ coefficients:
 ```{r}
 min.cp <- which.min(mod.summary$cp)
 min.bic <- which.min(mod.summary$bic)
@@ -285,36 +286,86 @@ max.adjr2 <- which.max(mod.summary$adjr2)
 
 Now we define a `ggplot2` function to simplify the process of exploring the results:
 ```{r}
-plot_statistics <- function(stat, opt.stat) {
-	variable <- mod.summary[[stat]]
+plot_statistics <- function(summary, stat, opt.stat, title.str = NULL) {
+	variable <- summary[[tolower(stat)]]
 	
 	gg <- ggplot(tibble(x = seq_along(variable), y = variable)) +
 		geom_line(aes(x = x, y = y)) +
 		geom_point(aes(x = opt.stat, y = variable[min.cp]), colour = "red") +
 		scale_x_continuous(breaks = seq(1:10)) +
-		labs(x = "Number of poly(X) or model size", y = paste("Best subset of", stat))
+		labs(x = "Subset size", y = paste("Best subset of", stat))
+	
+	if (!is.null(title.str)) {
+		gg <- gg + labs(title = title.str)
+	}
+	
 	return(gg)
 }
 ```
 
-Now we compare the three statistics as a function of thee model size:
+Now we compare the three statistics as a function of the subset size:
 ```{r}
-plot_statistics("cp", min.cp)
-plot_statistics("bic", min.bic)
-plot_statistics("adjr2", max.adjr2)
+plot_statistics(mod.summary, "Cp", min.cp)
+plot_statistics(mod.summary, "BIC", min.bic)
+plot_statistics(mod.summary, "AdjR2", max.adjr2)
 ```
 
 
-As we can see from the results, with $C_{p}$, BIC, and adjusted $R^{2}$ criteria, 3 variable models are picked. The expression is the following:
+As we can see from the results, with $C_{p}$, $BIC$, and adjusted $R^{2}$ criteria, 3-variable models are picked. The expression for this 3-variable model is the following:
 ```{r}
 coefficients(mod.full, id = min.cp)
-coefficients(mod.full, id = min.bic)
-coefficients(mod.full, id = max.adjr2)
 ```
 
 All three statistics pick $X^{5}$ over $X^{3}$. The remaining coefficients are quite close to the original $\beta_{i}$ of the $Y$ response.
 
 ### Exercise 8 (d)
+First of all, we need to fit forward and backward stepwise models to the data using the `regsubsets()` specifying the desired method:
+```{r}
+mod.fwd <- regsubsets(Y ~ poly(X, 10, raw = T), 
+											data = tibble(Y, X), 
+											nvmax = 10,
+											method = "forward")
+mod.bwd <- regsubsets(Y ~ poly(X, 10, raw = T), 
+											data = tibble(Y, X), 
+											nvmax = 10,
+											method = "backward")
+
+```
+
+Now we can get the summary of the best selection using both models:
+```{r}
+(fwd.summary <- summary(mod.fwd))
+(bwd.summary <- summary(mod.bwd))
+```
+
+As we did before, we find the model or subset size for the best $C_{p}$, $BIC$, and adjusted $R^{2}$ coefficients:
+```{r}
+min.cp.fwd <- which.min(fwd.summary$cp)
+min.cp.bwd <- which.min(bwd.summary$cp)
+min.bic.fwd <- which.min(fwd.summary$bic)
+min.bic.bwd <- which.min(bwd.summary$bic)
+max.adjr2.fwd <- which.max(fwd.summary$adjr2)
+max.adjr2.bwd <- which.max(bwd.summary$adjr2)
+```
+
+```{r}
+plot_statistics(fwd.summary, "Cp", min.cp.fwd, "Forward stepwise")
+plot_statistics(fwd.summary, "BIC", min.bic.fwd, "Forward stepwise")
+plot_statistics(fwd.summary, "AdjR2", max.adjr2.fwd, "Forward stepwise")
+
+plot_statistics(bwd.summary, "Cp", min.cp.bwd, "Backward stepwise")
+plot_statistics(bwd.summary, "BIC", min.bic.bwd, "Backward stepwise")
+plot_statistics(bwd.summary, "AdjR2", max.adjr2.bwd, "Backward stepwise")
+```
+
+As we can see from the results, using the backward stepwise method with $C_{p}$, $BIC$, and adjusted $R^{2}$ criteria, 3-variable models are picked, as it was with the exhaustive method. Again, all three statistics pick $X^{5}$ over $X^{3}$.
+
+For the forward stepwise model, though, for the $C_{p}$, $BIC$, and the adjusted $R^{2}$ criteria we get a 4, 3, and 4-variable model, respectively. The 4-variable model has the following expression:
+```{r}
+coefficients(mod.fwd, id = min.cp.fwd)
+```
+
+In this case, instead of picking $X^{5}$ over $X^{3}$, $X^{5}$ is an additional term to the selected predictors of the model.
 
 ### Exercise 8 (e)
 
