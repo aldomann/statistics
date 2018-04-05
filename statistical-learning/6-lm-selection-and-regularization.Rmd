@@ -1,19 +1,21 @@
 ---
-title: "Chapter 6: Linear Model Selection and Regularisation"
-subtitle: "An Introduction to Statistical Learning with Applications in R"
+title: 'Chapter 6: Linear Model Selection and Regularisation'
 author: "Alfredo Hernández"
 date: "10 April 2018"
-output: 
-  html_notebook: 
+output:
+  html_notebook:
     toc: yes
     toc_depth: 2
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+subtitle: An Introduction to Statistical Learning with Applications in R
 ---
-
-```{r message=FALSE, include=FALSE}
+First of all, we load packages and custom functions we will use later on:
+```{r message=FALSE}
 library(tidyverse)
+source("../libs/multiplot.R")
 ```
-
-
 
 # Exercise 3
 
@@ -43,40 +45,40 @@ for a particular value of $s$. For parts (a) through (e), indicate which of i. t
 
 ### Exercise 3 (a)
 
-(iv) Steadily decreases: As we increase $s$ from $0$, all $\beta$ increase from $0$ to their least square estimate values. Training error for $0$ $\beta$ is the maximum and it steadily decreases to the Ordinary Least Square RSS
+(iv) Steadily decreases: as $s$ increases $0$, all $\beta$ increase from $0$ to their least square estimate values. Therefore, the training error steadily decreases to the Ordinary Least Square RSS for the training data.
 
 ### Exercise 3 (b)
 
-(ii) Decrease initially, and then eventually start increasing in a U shape: When $s = 0$, all  $\beta$ are $0$, the model is extremely simple and has a high test RSS. As we increase $s$, $beta$ s assume non-zero values and model starts fitting well on test data and so test RSS decreases. Eventually, as $beta$ s approach their full blown OLS values, they start overfitting to the training data, increasing test RSS. 
+(ii) Decrease initially, and then eventually start increasing in a U shape: when $s = 0$, all  $\beta$ are $0$, the model has a high test RSS. As $s$ increases, the $beta$ coefficients assume non-zero values and the model fits the test data better, resulting in a decrease of the test RSS. In the long run, the $beta$ coefficients start to overfit the training data, resulting in an increase of the test RSS. 
 
 ### Exercise 3 (c)
 
-(iii) Steadily increase: When $s = 0$, the model effectively predicts a constant and has almost no variance. As we increase $s$, the models includes more $\beta$ s and their values start increasing. At this point, the values of $\beta$ s become highly dependent on training data, thus increasing the variance. 
+(iii) Steadily increase: variance always increases with fewer constraints. At $s = 0$, the model predicts a constant and has almost no variance. As $s$ increases, the values of the different $\beta$ become highly dependent on training data, resulting in an increase of the variance.
 
 ### Exercise 3 (d)
 
-(iv) Steadily decrease: When $s = 0$, the model effectively predicts a constant and hence the prediction is far from actual value. Thus bias is high. As $s$ increases, more $\beta$ s become non-zero and thus the model continues to fit training data better. And thus, bias decreases.
+(iv) Steadily decrease: bias always decreases with more model flexibility. WAt $s = 0$, the model predicts a constant and the prediction is far from actual value; thus the bias is high. As $s$ increases, more $\beta$ become non-zero and thus the model continues to fit training data better, resulting in a decrease of the bias.
 
 ### Exercise 3 (e)
 
-(v) Remains constant: By definition, irreducible error is model independent and hence irrespective of the choice of $s$, remains constant.
+(v) Remains constant: by definition, the irreducible error is independent of the selected model.
 
 ######################################################################
 
 # Exercise 5
 
 	
-It is well-known that ridge regression tends to give similar coefficient values to correlated variables, whereas the lasso may give quite different coefficient values to correlated variables. We will now explore this property in a very simple setting.
+It is well-known that ridge regression tends to give similar coefficient values to correlated variables, whereas the Lasso may give quite different coefficient values to correlated variables. We will now explore this property in a very simple setting.
 
-Suppose that $n = 2$, $p = 2$, $x_{11} = x_{12}$, $x_{21} = x_{22}$. Furthermore, suppose that $y_{1} + y_{2} = 0$ and $x_{11} + x_{21} = 0$ and $x_{12} + x_{22} = 0$, so that the estimate for the intercept in a least squares, ridge regression, or lasso model is zero: $\hat{\beta}_{0} = 0$.
+Suppose that $n = 2$, $p = 2$, $x_{11} = x_{12}$, $x_{21} = x_{22}$. Furthermore, suppose that $y_{1} + y_{2} = 0$ and $x_{11} + x_{21} = 0$ and $x_{12} + x_{22} = 0$, so that the estimate for the intercept in a least squares, ridge regression, or Lasso model is zero: $\hat{\beta}_{0} = 0$.
 
 (a) Write out the ridge regression optimisation problem in this setting.
  
 (b) Argue that in this setting, the ridge coefficient estimates satisfy $\hat{\beta}_{1} =\hat{\beta}_{2}$.
  
-(c) Write out the lasso optimisation problem in this setting.
+(c) Write out the Lasso optimisation problem in this setting.
  
-(d) Argue that in this setting, the lasso coefficients $\hat{\beta}_{1}$ and $\hat{\beta}_{2}$ are not unique; in other words, there are many possible solutions to the optimisation problem in (c). Describe these solutions.
+(d) Argue that in this setting, the Lasso coefficients $\hat{\beta}_{1}$ and $\hat{\beta}_{2}$ are not unique; in other words, there are many possible solutions to the optimisation problem in (c). Describe these solutions.
 
 ## Answers
 
@@ -98,56 +100,54 @@ $$
 
 ### Exercise 5 (b)
 
-First of all, we set $x_{11}=x_{12}=x_1$ and $x_{21}=x_{22}=x_2$. Then, we expand the previous expression; and we take the partial deritive to $\hat\beta_1$ and set equation to 0:
+First of all, we set $x_{11}=x_{12}=x_1$ and $x_{21}=x_{22}=x_2$. Then, we expand the previous expression; and we take the partial deritive to $\hat{\beta}_1$ and set equation to 0:
 $$
-(\hat\beta_1x_1^2-x_1y_1+\hat\beta_2x_1^2) + (\hat\beta_1x_2^2-x_2y_2+\hat\beta_2x_2^2) + \lambda\hat\beta_1 = 0
+(\hat{\beta}_1x_1^2-x_1y_1+\hat{\beta}_2x_1^2) + (\hat{\beta}_1x_2^2-x_2y_2+\hat{\beta}_2x_2^2) + \lambda\hat{\beta}_1 = 0
 \\
-\Rightarrow \hat\beta_1 (x_1^2+x_2^2) + \hat\beta_2 (x_1^2+x_2^2) + \lambda\hat\beta_1 = x_1y_1 + x_2y_2 .
+\Rightarrow \hat{\beta}_1 (x_1^2+x_2^2) + \hat{\beta}_2 (x_1^2+x_2^2) + \lambda\hat{\beta}_1 = x_1y_1 + x_2y_2 .
 $$
 
-Now we add $2\hat\beta_1x_1x_2$ and $2\hat\beta_2x_1x_2$ to both sides of the equation:
+Now we add $2\hat{\beta}_1x_1x_2$ and $2\hat{\beta}_2x_1x_2$ to both sides of the equation:
 
 $$
-\hat\beta_1 (x_1^2 + x_2^2 + 2x_1x_2) + \hat\beta_2 (x_1^2 + x_2^2 + 2x_1x_2) + \lambda\hat\beta_1 
-= x_1y_1 + x_2y_2 + 2\hat\beta_1x_1x_2 + 2\hat\beta_2x_1x_2 
+\hat{\beta}_1 (x_1^2 + x_2^2 + 2x_1x_2) + \hat{\beta}_2 (x_1^2 + x_2^2 + 2x_1x_2) + \lambda\hat{\beta}_1 
+= x_1y_1 + x_2y_2 + 2\hat{\beta}_1x_1x_2 + 2\hat{\beta}_2x_1x_2 
 \\
-\hat\beta_1 (x_1 + x_2)^2 + \hat\beta_2 (x_1 + x_2)^2 + \lambda\hat\beta_1 
-= x_1y_1 + x_2y_2 + 2\hat\beta_1x_1x_2 + 2\hat\beta_2x_1x_2 , 
+\hat{\beta}_1 (x_1 + x_2)^2 + \hat{\beta}_2 (x_1 + x_2)^2 + \lambda\hat{\beta}_1 
+= x_1y_1 + x_2y_2 + 2\hat{\beta}_1x_1x_2 + 2\hat{\beta}_2x_1x_2 , 
 $$
 
 and because $x_1+x_2=0$, we can eliminate the first two terms:
 
 $$
-\lambda\hat\beta_1 = x_1y_1 + x_2y_2 + 2\hat\beta_1x_1x_2 + 2\hat\beta_2x_1x_2 .
+\lambda\hat{\beta}_1 = x_1y_1 + x_2y_2 + 2\hat{\beta}_1x_1x_2 + 2\hat{\beta}_2x_1x_2 .
 $$
 
-
-Similarly by taking the partial deritive to $\hat\beta_2$, we can get the equation:
-
+Likewise by taking the partial deritive to $\hat{\beta}_2$, we can get the equation:
 $$
-\lambda\hat\beta_2 = x_1y_1 + x_2y_2 + 2\hat\beta_1x_1x_2 + 2\hat\beta_2x_1x_2 .
+\lambda\hat{\beta}_2 = x_1y_1 + x_2y_2 + 2\hat{\beta}_1x_1x_2 + 2\hat{\beta}_2x_1x_2 .
 $$
 
-Finally, we see that the left side of the equations for both $\lambda\hat\beta_1$ and $\lambda\hat\beta_2$ are the same so we have:
+Finally, we see that the left side of the equations for both $\lambda\hat{\beta}_1$ and $\lambda\hat{\beta}_2$ are the same so we have:
 
 $$
-\lambda\hat\beta_1 = \lambda\hat\beta_2 
+\lambda\hat{\beta}_1 = \lambda\hat{\beta}_2 
 \Rightarrow 
 \boxed{
-\hat\beta_1 = \hat\beta_2
+\hat{\beta}_1 = \hat{\beta}_2
 }.
 $$
 
 ### Exercise 5 (c)
 
-A general form of lasso optimisation looks like
+A general form of Lasso optimisation looks like
 
 $$
 \text{Minimise:} \quad 
 \sum\limits_{i=1}^{n} {(y_i - \hat{\beta}_0 - \sum\limits_{j=1}^{p} {\hat{\beta}_jx_j} )^2} + \lambda \sum\limits_{j=1}^{p} | \hat{\beta_{j}} |.
 $$
 
-For lasso, like in Ridge regression, we have
+For Lasso, like in Ridge regression, we have
 
 $$
 \boxed{
@@ -208,7 +208,7 @@ where $\beta_{0}$, $\beta_{1}$, $\beta_{2}$, and $\beta_{3}$ are constants of yo
  
 (d) Repeat (c), using forward stepwise selection and also using backwards stepwise selection. How does your answer compare to the results in (c)?
  
-(e) Now fit a lasso model to the simulated data, again using $X, {X}^{2}, \dots, {X}^{10}$ as predictors. Use cross-validation to select the optimal value of $\lambda$. Create plots of the cross-validation error as a function of $\lambda$. Report the resulting coefficient estimates, and discuss the results obtained.
+(e) Now fit a Lasso model to the simulated data, again using $X, {X}^{2}, \dots, {X}^{10}$ as predictors. Use cross-validation to select the optimal value of $\lambda$. Create plots of the cross-validation error as a function of $\lambda$. Report the resulting coefficient estimates, and discuss the results obtained.
  
 (f) Now generate a response vector $Y$ according to the model
 
@@ -216,12 +216,12 @@ $$
 Y = \beta_{0} + \beta_{7} {X}^{7} + \epsilon,
 $$  
  
-and perform best subset selection and the lasso. Discuss the results obtained.
+and perform best subset selection and the Lasso. Discuss the results obtained.
 
 ## Answers
 
 ### Exercise 8 (a)
-To be consistent with out results, we need to set a seed first:
+To be consistent with our results, we need to set a seed first:
 ```{r}
 set.seed(1)
 ```
@@ -236,10 +236,10 @@ epsilon <- rnorm(100)
 
 First of all, we define our $\beta$ coefficients:
 ```{r}
-beta0 = 2
-beta1 = 3
-beta2 = -2
-beta3 = -0.3
+beta0 <- 2
+beta1 <- 3
+beta2 <- -2
+beta3 <- -0.3
 ```
 
 Now we define our $Y$ response:
@@ -248,9 +248,8 @@ Y <- beta0 + beta1 * X + beta2 * X^2 + beta3 * X^3 + epsilon
 ```
 
 We can see our function below:
-
 ```{r}
-ggplot(data = tibble(X,Y)) +
+ggplot(data = tibble(X, Y)) +
 	geom_point(aes(x = X, y = Y))
 ```
 
@@ -261,7 +260,7 @@ We need the `leaps` package to use the `regsubsets()` function:
 library(leaps)
 ```
 
-Now we use `regsubsets()` to select best model having  polynomial of $X$ of degree 10:
+Now we use `regsubsets()` to select best model having a polynomial of $X$ of degree 10:
 ```{r}
 mod.full <- regsubsets(Y ~ poly(X, 10, raw = T), 
 											 data = tibble(Y, X), 
@@ -271,7 +270,7 @@ Note that we use the `poly()` function with the `raw = TRUE` option to use raw p
 
 Now we can get the summary of the best selection using an exhaustive algorithm (the default method of `regsubsets()`):
 ```{r}
-(mod.summary <- summary(mod.full))
+(mod.summary <- summary(mod.full))[["outmat"]]
 ```
 
 Now we find the model or subset size for the best $C_{p}$, $BIC$, and adjusted $R^{2}$ coefficients:
@@ -280,6 +279,14 @@ min.cp <- which.min(mod.summary$cp)
 min.bic <- which.min(mod.summary$bic)
 max.adjr2 <- which.max(mod.summary$adjr2)
 ```
+
+Let us remember that the previous coefficients are defined as follows:
+$$
+C_{p} = \frac{1}{n} (\text{RSS} + 2d \hat{\sigma}^{2}), \quad
+BIC = \frac{1}{n} (\text{RSS} + \log(n) d \hat{\sigma}^{2}), \quad
+\text{Adj} R^{2} = 1 - \frac{\text{RSS}/(n-d-1)}{\text{TSS}/(n-1)},
+$$
+where $\text{TSS} = \sum (y_{i} - \bar{y})^{2}$ is the total sum of squares.
 
 Now we define a `ggplot2` function to simplify the process of exploring the results:
 ```{r}
@@ -302,9 +309,16 @@ plot_statistics <- function(summary, stat, opt.stat, title.str = NULL) {
 
 Now we compare the three statistics as a function of the subset size:
 ```{r}
-plot_statistics(mod.summary, "Cp", min.cp)
-plot_statistics(mod.summary, "BIC", min.bic)
-plot_statistics(mod.summary, "AdjR2", max.adjr2)
+ggmatrix(list(plot_statistics(mod.summary, "Cp", min.cp),
+							plot_statistics(mod.summary, "BIC", min.bic),
+							plot_statistics(mod.summary, "AdjR2", max.adjr2)),
+				 nrow = 3, ncol = 1,
+				 yAxisLabels = c("Cp", "BIC", "AdjR2"),
+				 xlab = "Subset Size",
+				 ylab = "Best Subset of",
+				 switch = "both") +
+	theme(strip.background = element_rect(fill = "white"),
+				strip.placement = "outside")
 ```
 
 
@@ -334,8 +348,8 @@ mod.bwd <- regsubsets(Y ~ poly(X, 10, raw = T),
 
 Now we can get the summary of the best selection using both models:
 ```{r}
-(fwd.summary <- summary(mod.fwd))
-(bwd.summary <- summary(mod.bwd))
+(fwd.summary <- summary(mod.fwd))[["outmat"]]
+(bwd.summary <- summary(mod.bwd))[["outmat"]]
 ```
 
 As we did before, we find the model or subset size for the best $C_{p}$, $BIC$, and adjusted $R^{2}$ coefficients:
@@ -351,20 +365,30 @@ max.adjr2.bwd <- which.max(bwd.summary$adjr2)
 ```
 
 ```{r}
-plot_statistics(fwd.summary, "Cp", min.cp.fwd, "Forward Stepwise")
-plot_statistics(fwd.summary, "BIC", min.bic.fwd, "Forward Stepwise")
-plot_statistics(fwd.summary, "AdjR2", max.adjr2.fwd, "Forward Stepwise")
-
-plot_statistics(bwd.summary, "Cp", min.cp.bwd, "Backward Stepwise")
-plot_statistics(bwd.summary, "BIC", min.bic.bwd, "Backward Stepwise")
-plot_statistics(bwd.summary, "AdjR2", max.adjr2.bwd, "Backward Stepwise")
+ggmatrix(list(# Forward Stepwise
+							plot_statistics(fwd.summary, "Cp", min.cp.fwd),
+							plot_statistics(fwd.summary, "BIC", min.bic.fwd),
+							plot_statistics(fwd.summary, "AdjR2", max.adjr2.fwd),
+							# Backward Stepwise
+							plot_statistics(bwd.summary, "Cp", min.cp.bwd),
+							plot_statistics(bwd.summary, "BIC", min.bic.bwd),
+							plot_statistics(bwd.summary, "AdjR2", max.adjr2.bwd)),
+				 byrow = F,
+				 nrow = 3, ncol = 2,
+				 yAxisLabels = c("Cp", "BIC", "AdjR2"),
+				 xAxisLabels = c("Forward Stepwise", "Backward Stepwise"),
+				 xlab = "Subset Size",
+				 ylab = "Best Subset of",
+				 switch = "both") +
+	theme(strip.background = element_rect(fill = "white"),
+				strip.placement = "outside")
 ```
 
 As we can see from the results, using the forward and backward stepwise methods we get the same exact results: the $C_{p}$ and adjusted $R^{2}$ statistics pick $X^{5}$ additionally to $X^{0}$, $X^{1}$, $X^{2}$, and $X^{3}$ whilst for the $BIC$ selects the correct model.
 
 ### Exercise 8 (e)
 
-We need the `glmnet` package to use lasso on the data:
+We need the `glmnet` package to use Lasso on the data:
 ```{r message=FALSE}
 library(glmnet)
 ```
@@ -372,43 +396,51 @@ library(glmnet)
 ```{r}
 xmat <- model.matrix(Y ~ poly(X, 10, raw = T), 
 										 data = tibble(Y,X))[, -1]
-mod.lasso <- cv.glmnet(xmat, Y, alpha = 1)
+mod.Lasso <- cv.glmnet(xmat, Y, alpha = 1)
 ```
 Notice that we use `[, -1]` to get rid of the intercept column.
 
 We can easily find out the optimal $\lambda$:
 ```{r}
-(best.lambda <- mod.lasso$lambda.min)
+(best.lambda <- mod.Lasso$lambda.min)
 ```
 
-We can see the lasso model in the following plot:
+We can see the Lasso model in the following plot:
 ```{r}
-plot(mod.lasso)
+plot(mod.Lasso)
 ```
 
 
-Now, the final step is to use the `predict()` function with the lasso model to find the coefficients:
+Now, the final step is to use the `predict()` function with the Lasso model to find the coefficients:
 ```{r}
-predict(mod.lasso, s = best.lambda, type="coefficients")
+predict(mod.Lasso, s = best.lambda, type="coefficients")
 ```
 
-Let's notice that lasso predicts $\beta_{0} + \beta_{1}X + \beta_{2}{X}^{2} + \beta_{3}{X}^{3} + \beta_{10}{X}^{10}$, but $\beta_{10}$ is almost negligible.
+Let us notice that Lasso predicts $\beta_{0} + \beta_{1}X + \beta_{2}{X}^{2} + \beta_{3}{X}^{3} + \beta_{10}{X}^{10}$, but $\beta_{10}$ is almost negligible.
 
 ### Exercise 8 (f)
 
 First of all, we create a new $Y$ response with different $\beta_{7} = 7$:
 ```{r}
-beta7 = 7
-Y2 = beta0 + beta7 * X^7 + epsilon
+beta7 <- 7
+Y2 <- beta0 + beta7 * X^7 + epsilon
 ```
 
+We can see our function below:
+```{r}
+ggplot(data = tibble(X, Y2)) +
+	geom_point(aes(x = X, y = Y2))
+```
+
+Now we use `regsubsets()` to select best model and perform a summary of the selected models:
 ```{r}
 mod2.full <- regsubsets(Y2 ~ poly(X, 10, raw = T), 
 												data = tibble(Y2, X), 
 												nvmax = 10)
-mod2.summary <- summary(mod2.full)
+(mod2.summary <- summary(mod2.full))[["outmat"]]
 ```
 
+Let us find the model for the best $C_{p}$, $BIC$, and adjusted $R^{2}$ coefficients:
 ```{r}
 min2.cp <- which.min(mod2.summary$cp)
 min2.bic <- which.min(mod2.summary$bic)
@@ -416,9 +448,16 @@ max2.adjr2 <- which.max(mod2.summary$adjr2)
 ```
 
 ```{r}
-plot_statistics(mod2.summary, "Cp", min2.cp)
-plot_statistics(mod2.summary, "BIC", min2.bic)
-plot_statistics(mod2.summary, "AdjR2", max2.adjr2)
+ggmatrix(list(plot_statistics(mod2.summary, "Cp", min2.cp),
+							plot_statistics(mod2.summary, "BIC", min2.bic),
+							plot_statistics(mod2.summary, "AdjR2", max2.adjr2)),
+				 nrow = 3, ncol = 1,
+				 yAxisLabels = c("Cp", "BIC", "AdjR2"),
+				 xlab = "Subset Size",
+				 ylab = "Best Subset of",
+				 switch = "both") +
+	theme(strip.background = element_rect(fill = "white"),
+				strip.placement = "outside")
 ```
 
 ```{r}
@@ -431,22 +470,24 @@ coefficients(mod2.full, id = max2.adjr2)
 ```
 What we see from the previous results is that $BIC$ statistic picks the most accurate 1-variable model with matching coefficients, whilst other criteria pick additional variables.
 
-Let us use now use lasso to find the best model:
+Let us use now use Lasso to find the best model:
 ```{r}
 xmat2 <- model.matrix(Y2 ~ poly(X, 10, raw = T), 
 										 data = tibble(Y2, X))[, -1]
-mod2.lasso <-  cv.glmnet(xmat2, Y2, alpha = 1)
+mod2.Lasso <-  cv.glmnet(xmat2, Y2, alpha = 1)
 ```
 
 ```{r}
-(best2.lambda = mod2.lasso$lambda.min)
+(best2.lambda <- mod2.Lasso$lambda.min)
 ```
 
 ```{r}
-best.model2 <-  glmnet(xmat2, Y2, alpha = 1)
+best.model2 <- glmnet(xmat2, Y2, alpha = 1)
 predict(best.model2, s = best.lambda, type = "coefficients")
 ```
-As we can see, lasso also picks the best 1-variable model, but the intercept coefficient does not give a good estimation of the real value of $\beta_{0}$.
+As we can see, Lasso also picks the best 1-variable model, but the intercept coefficient does not give a good estimation of the real value of $\beta_{0}$. 
+
+As a conclusion, it seems that $BIC$ and Lasso effectively select the 1-variable model, but $BIC$ gives a remarkably better estimation of $\beta_{0}$ and $\beta_{7}$.
 
 
 ######################################################################
@@ -461,7 +502,7 @@ In this exercise, we will predict the number of applications received using the 
  
 (c) Fit a ridge regression model on the training set, with $\lambda$ chosen by cross-validation. Report the test error obtained.
  
-(d) Fit a lasso model on the training set, with $\lambda$ chosen by cross-validation. Report the test error obtained, along with the number of non-zero coefficient estimates.
+(d) Fit a Lasso model on the training set, with $\lambda$ chosen by cross-validation. Report the test error obtained, along with the number of non-zero coefficient estimates.
  
 (g) Comment on the results obtained. How accurately can we predict the number of college applications received? Is there much difference among the test errors resulting from these five approaches?
 
