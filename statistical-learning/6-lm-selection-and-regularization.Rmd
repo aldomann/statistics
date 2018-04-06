@@ -322,7 +322,7 @@ ggmatrix(list(plot_statistics(mod.summary, "Cp", min.cp),
 ```
 
 
-As we can see from the results, with $C_{p}$, $BIC$, and adjusted $R^{2}$ criteria, 4, 3, 4-variable models are picked, respectively. The expression for this 4-variable and 3-variable model are the following, respectively:
+As we can see from the results, with $C_{p}$, $BIC$, and adjusted $R^{2}$ criteria, `r min.cp`, `r min.bic`, `r max.adjr2 `-variable models are picked, respectively. The expression for this `r min.cp`-variable and `r min.bic`-variable model are the following, respectively:
 ```{r}
 # 4-variable model
 coefficients(mod.full, id = min.cp)
@@ -468,7 +468,7 @@ coefficients(mod2.full, id = min2.bic)
 # 4-variable model
 coefficients(mod2.full, id = max2.adjr2)
 ```
-What we see from the previous results is that $BIC$ statistic picks the most accurate 1-variable model with matching coefficients, whilst other criteria pick additional variables.
+What we see from the previous results is that $BIC$ statistic picks the most accurate `r min2.bic`-variable model with matching coefficients, whilst other criteria pick additional variables.
 
 Let us use now use Lasso to find the best model:
 ```{r}
