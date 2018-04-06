@@ -510,7 +510,37 @@ In this exercise, we will predict the number of applications received using the 
 
 ### Exercise 9 (a)
 
+First of all, we load the `ISLR` package to work with the `College` data set:
+```{r}
+library(ISLR)
+```
+
+Before doing anything, let's make sure the data set does not have missing data:
+```{r}
+table(is.na(College))
+```
+As we can see, the data is alright and there is no need to clean it.
+
+Now we can work with the `College` data set and create a `college.train` (50% of the data) and `college.test` (50% of the data set):
+```{r}
+set.seed(2)
+college.size <- nrow(College)
+train.ind <- sample(1:college.size, college.size/2)
+
+college.train <- College[train.ind, ]
+college.test <- College[-train.ind, ]
+```
+
 ### Exercise 9 (b)
+
+Now we will perform a linear model for the number of applications (`Apps`) and calculate the RSS for the test data:
+```{r}
+apps.fit <- lm(Apps ~ ., data = college.train)
+apps.pred <- predict(apps.fit, newdata = college.test)
+apps.test.rss <- mean((college.test$Apps - apps.pred)^2)
+```
+The RSS for the test data is `r apps.test.rss`.
+
 
 ### Exercise 9 (c)
 
