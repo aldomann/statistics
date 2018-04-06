@@ -633,7 +633,7 @@ The plot shows that test $R^2$ for all models are around 0.9, with Lasso having 
 We have seen that as the number of features used in a model increases, the training error will necessarily decrease, but the test error may not. We will now explore this in a simulated data set.
 
 (a) Generate a data set with $p = 20$ features, $n = 1000$ observations, and an associated quantitative response vector generated according to the model
-$$\displaystyle{Y = X\beta +\epsilon,}$$ 
+$$\displaystyle{Y = X \cdot \beta +\epsilon,}$$ 
 where $\beta$ has some elements that are exactly equal to zero.
  
 (b) Split your data set into a training set containing 100 observations and a test set containing 900 observations.
@@ -652,8 +652,61 @@ How does the model at which the test set MSE is minimized compare to the true mo
 ## Answers
 
 ### Exercise 10 (a)
+As usual, we start setting a seed to have consistent results:
+```{r}
+set.seed(4)
+```
+
+First of all, we define the number of features $p$ and the number of observations $n$:
+```{r}
+p <- 20
+n <- 1000
+```
+
+We define now the set of predictors $X$ and the random error:
+```{r}
+X.mat <- matrix(rnorm(n * p), ncol = p)
+epsilon <- rnorm(n)
+```
+
+We define a random $\beta$ coefficients vector and set some of the $\beta_{i}$ to be $0$:
+```{r}
+betas <- sample(-5:5, p, replace = T)
+betas[sample(1:p, 6, replace = F)] <- 0
+betas
+```
+This is, we have a model with `r length(betas[betas != 0])` non-zero variables.
+
+Now we can easily define the $Y$ response vector:
+```{r}
+Y <- X.mat %*% betas + epsilon
+```
+Note that we use the inner product `%*%` for the matrix multiplication.
 
 ### Exercise 10 (b)
+
+Now we split our `X.mat` data set into a training set containing 10% of the observations, and a test set containing the remaining 90%:
+```{r}
+train.ind <- sample(1:n, n*0.1)
+X.mat.train <- X.mat[train.ind, ]
+X.mat.test <- X.mat[-train.ind, ]
+```
+
+Now we do the same for the $Y$ response vector:
+```{r}
+Y.train <- Y[train.ind, ]
+Y.test <- Y[-train.ind, ]
+train.df <- tibble(y = Y.train, X.mat.train)
+test.df <- tibble(y = Y.test, X.mat.test)
+```
+
+Let us have a quick glance at the response $Y$ as a scatterplot (just ordered in sequential order):
+```{r}
+ggplot(data = rbind( cbind(train.df, type = rep("train", nrow(train.df))),
+										 cbind(test.df, type = rep("test", nrow(test.df)))) ) +
+	geom_point(aes(x = seq_along(y), y = y, colour = type)) +
+	labs(x = "Data index (Sequence along Y)", y = "Y Response", colour = "Data Set")
+```
 
 ### Exercise 10 (c)
 
