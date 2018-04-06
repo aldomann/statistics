@@ -561,7 +561,7 @@ Now we simply calculate the RSS for the test data:
 apps.pred.ridge <- predict(apps.ridge, s = best.lambda.ridge, newx = xmat.test)
 apps.ridge.test.rss <- mean((college.test$Apps - apps.pred.ridge)^2)
 ```
-The RSS for the test data using a Ridge regression is `r apps.ridge.test.rss`, which is a bit higher than the one obtained using OLS.
+The RSS for the test data using a Ridge regression is `r apps.ridge.test.rss`, which is slightly lower than the one obtained using OLS.
 
 ### Exercise 9 (d)
 
@@ -577,7 +577,7 @@ apps.pred.lasso <- predict(apps.lasso, s = best.lambda.lasso, newx = xmat.test)
 apps.lasso.test.rss <- mean((college.test$Apps - apps.pred.lasso)^2)
 ```
 
-The RSS for the test data using a Lasso regression is `r apps.lasso.test.rss`, which is again a bit higher than the one obtanes using OLS, and somewhat smaller than the RSS obtained using a Ridge regression.
+The RSS for the test data using a Lasso regression is `r apps.lasso.test.rss`, which is lower than both OLS and Ridge regressions.
 
 ### Exercise 9 (g)
 
@@ -624,7 +624,7 @@ ggplot(apps.results) +
 	labs(title = "Test R-squared", x = "Method", y = "R-Squared")
 ```
 
-The plot shows that test $R^2$ for all models are around 0.9, with OLS having slightly higher test $R^2$ than Ridge and Lasso. We can conclude that all models predict college applications with high accuracy. 
+The plot shows that test $R^2$ for all models are around 0.9, with Lasso having slightly higher test $R^2$ than OLS and Ridge. We can conclude that all models predict college applications with high accuracy. 
 
 ######################################################################
 
