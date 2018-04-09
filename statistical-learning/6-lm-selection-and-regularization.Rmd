@@ -737,7 +737,7 @@ Now we use `regsubsets()` to select best model for each size:
 regfit.full = regsubsets(y ~ ., data=train.df, nvmax=p)
 
 err.full.train <- rep(NA, p)
-for(i in 1:p) {
+for (i in 1:p) {
   pred.full <- predict(regfit.full, train.df, id=i)
   err.full.train[i] <- mean((train.df$y - pred.full)^2)
 }
@@ -746,10 +746,13 @@ for(i in 1:p) {
 Let us see the training set MSE associated with the best model of each size. We will use a custom `ggplot2` function:
 ```{r}
 plot_mse <- function(error) {
-	ggplot( tibble(num = seq(1:length(error)), error)) +
+	error.df <- tibble(num = seq(1:length(error)), err = error)
+	min.error <- subset(error.df, err == which.min(error))
+	ggplot(error.df) +
 		aes(x = num, y = error) +
 		geom_line() +
-		geom_point(colour = "red") +
+		geom_point(size = 2) + 
+		# geom_point(data = min.error, colour = "red") +
 		labs(x = "Number of Predictors", y = "MSE")
 }
 ```
@@ -769,7 +772,7 @@ which.min(err.full.train)
 Now we repeat the steps done previously, but now for the test set:
 ```{r}
 err.full.test <- rep(NA, p)
-for(i in 1:p) {
+for (i in 1:p) {
   pred.full <- predict(regfit.full, test.df, id=i)
   err.full.test[i] <- mean((test.df$y - pred.full)^2)
 }
@@ -787,17 +790,39 @@ which.min(err.full.test)
 ```
 
 ### Exercise 10 (f)
-Let us now see the coefficients of the response selected by the test set and compare them with the real model:
+Let us now see the coefficients of the response selected by the test set and compare them with the real model. For that, we will define a custom function to create a data frame (which will be used also later on):
+```{r}
+get_coef_df <- function(betas, coefs, sort.opt = T) {
+	merge(tibble(beta = names(betas), betas), 
+				tibble(beta = names(coefs), coefs), 
+				all.x = T, sort = sort.opt)
+}
+```
+
+The coefficients are:
 ```{r}
 coef.best <- coef(regfit.full, id = which.min(err.full.test))
 betas[betas != 0]
 names(betas) <- paste0("β", 1:20)
 
-coefs.df <- merge(tibble(beta = names(betas), betas), 
-									tibble(beta = names(coef.best), coef.best), 
-									all.x = T, sort = F)
-coefs.df
+(coefs.df <- get_coef_df(betas, coef.best, F))
 ```
+
 As we can see, the best subset model successfully selected all the correct predictors, i.e., the following $\beta$: `r which(coefs.df$betas == 0)`.
 
 ### Exercise 10 (g)
+
+```{r}
+err.coef <- rep(NA, p)
+for (i in 1:p) {
+  coef.i <- coef(regfit.full, id=i)
+  df.err <- get_coef_df(betas, coef.i)
+  df.err[is.na(df.err[,3]),3] <- 0
+  err.coef[i] <- sqrt(sum((df.err[,2] - df.err[,3])^2))
+}
+```
+```{r}
+plot_mse(err.coef)
+```
+
+As we can see, the coefficient error plot shows a very similar plot to the test error plot, although the minimum value is more pronounced.
