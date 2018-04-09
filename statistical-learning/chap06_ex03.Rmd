@@ -1,0 +1,61 @@
+---
+title: 'Chapter 6: Linear Model Selection and Regularisation'
+subtitle: 'An Introduction to Statistical Learning with Applications in R'
+author: "Alfredo Hernández"
+date: "10 April 2018"
+output:
+  html_notebook:
+    toc: yes
+    toc_depth: 3
+---
+
+```{r message=FALSE, include=FALSE}
+library(tidyverse)
+source("../libs/multiplot.R")
+```
+
+# Exercise 3
+
+Suppose we estimate the regression coefficients in a linear regression model by minimising
+$$
+\sum_{i=1}^{n}\left (y_{i} -\beta_{0} -\sum_{j=1}^{p}\beta_{j}x_{ij}\right )\quad \text{subject to}\quad \sum_{j=1}^{p}\vert \beta_{j}\vert \leq s
+$$
+
+for a particular value of $s$. For parts (a) through (e), indicate which of i. through v. is correct. Justify your answer.
+
+(a) As we increase $s$ from 0, the training RSS will:
+	i. Increase initially, and then eventually start decreasing in an inverted U shape.
+	ii. Decrease initially, and then eventually start increasing in a U shape.
+	iii. Steadily increase.
+	iv. Steadily decrease.
+	v. Remain constant.
+
+(b) Repeat (a) for test RSS.
+ 
+(c) Repeat (a) for variance.
+ 
+(d) Repeat (a) for (squared) bias.
+ 
+(e) Repeat (a) for the irreducible error.
+
+<!-- ## Answers -->
+
+## Exercise 3 (a)
+
+(iv) Steadily decreases: as $s$ increases $0$, all $\beta$ increase from $0$ to their least square estimate values. Therefore, the training error steadily decreases to the Ordinary Least Square RSS for the training data.
+
+## Exercise 3 (b)
+
+(ii) Decrease initially, and then eventually start increasing in a U shape: when $s = 0$, all  $\beta$ are $0$, the model has a high test RSS. As $s$ increases, the $beta$ coefficients assume non-zero values and the model fits the test data better, resulting in a decrease of the test RSS. In the long run, the $beta$ coefficients start to overfit the training data, resulting in an increase of the test RSS. 
+
+## Exercise 3 (c)
+
+(iii) Steadily increase: variance always increases with fewer constraints. At $s = 0$, the model predicts a constant and has almost no variance. As $s$ increases, the values of the different $\beta$ become highly dependent on training data, resulting in an increase of the variance.
+
+## Exercise 3 (d)
+
+(iv) Steadily decrease: bias always decreases with more model flexibility. WAt $s = 0$, the model predicts a constant and the prediction is far from actual value; thus the bias is high. As $s$ increases, more $\beta$ become non-zero and thus the model continues to fit training data better, resulting in a decrease of the bias.
+
+## Exercise 3 (e)
+
+(v) Remains constant: by definition, the irreducible error is independent of the selected model.

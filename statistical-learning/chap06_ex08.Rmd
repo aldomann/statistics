@@ -1,0 +1,314 @@
+---
+title: 'Chapter 6: Linear Model Selection and Regularisation'
+subtitle: 'An Introduction to Statistical Learning with Applications in R'
+author: "Alfredo Hernández"
+date: "10 April 2018"
+output:
+  html_notebook:
+    toc: yes
+    toc_depth: 3
+---
+
+```{r message=FALSE, include=FALSE}
+library(tidyverse)
+source("../libs/multiplot.R")
+```
+
+# Exercise 8
+	
+In this exercise, we will generate simulated data, and will then use this data to perform best subset selection.
+
+(a) Use the `rnorm()` function to generate a predictor $X$ of length $n = 100$, as well as a noise vector $\epsilon$ of length $n = 100$.
+ 
+(b) Generate a response vector $Y$ of length $n = 100$ according to the model
+$$
+Y = \beta_{0} + \beta_{1}X + \beta_{2}{X}^{2} + \beta_{3}{X}^{3} + \epsilon,
+$$
+ 
+where $\beta_{0}$, $\beta_{1}$, $\beta_{2}$, and $\beta_{3}$ are constants of your choice.
+ 
+(c) Use the `regsubsets()` function to perform best subset selection in order to choose the best model containing the predictors $X, {X}^{2}, \dots, {X}^{10}$. What is the best model obtained according to $C_{p}$, $BIC$, and adjusted $R^{2}$? Show some plots to provide evidence for your answer, and report the coefficients of the best model obtained.
+ 
+(d) Repeat (c), using forward stepwise selection and also using backwards stepwise selection. How does your answer compare to the results in (c)?
+ 
+(e) Now fit a Lasso model to the simulated data, again using $X, {X}^{2}, \dots, {X}^{10}$ as predictors. Use cross-validation to select the optimal value of $\lambda$. Create plots of the cross-validation error as a function of $\lambda$. Report the resulting coefficient estimates, and discuss the results obtained.
+ 
+(f) Now generate a response vector $Y$ according to the model
+
+$$
+Y = \beta_{0} + \beta_{7} {X}^{7} + \epsilon,
+$$  
+ 
+and perform best subset selection and the Lasso. Discuss the results obtained.
+
+<!-- ## Answers -->
+
+## Exercise 8 (a)
+To be consistent with our results, we need to set a seed first:
+```{r}
+set.seed(1)
+```
+
+Now we define the predictor $X$ and the noise $\epsilon$:
+```{r}
+X <- rnorm(100)
+epsilon <- rnorm(100)
+```
+
+## Exercise 8 (b)
+
+First of all, we define our $\beta$ coefficients:
+```{r}
+beta0 <- 2
+beta1 <- 3
+beta2 <- -2
+beta3 <- -0.3
+```
+
+Now we define our $Y$ response:
+```{r}
+Y <- beta0 + beta1 * X + beta2 * X^2 + beta3 * X^3 + epsilon
+```
+
+We can see our function below:
+```{r}
+ggplot(data = tibble(X, Y)) +
+	geom_point(aes(x = X, y = Y))
+```
+
+## Exercise 8 (c)
+
+We need the `leaps` package to use the `regsubsets()` function:
+```{r message=FALSE}
+library(leaps)
+```
+
+Now we use `regsubsets()` to select best model having a polynomial of $X$ of degree 10:
+```{r}
+mod.full <- regsubsets(Y ~ poly(X, 10, raw = T), 
+											 data = tibble(Y, X), 
+											 nvmax = 10)
+```
+Note that we use the `poly()` function with the `raw = TRUE` option to use raw polynomials instead of orthogonal ones. 
+
+Now we can get the summary of the best selection using an exhaustive algorithm (the default method of `regsubsets()`):
+```{r}
+(mod.summary <- summary(mod.full))[["outmat"]]
+```
+
+Now we find the model or subset size for the best $C_{p}$, $BIC$, and adjusted $R^{2}$ coefficients:
+```{r}
+min.cp <- which.min(mod.summary$cp)
+min.bic <- which.min(mod.summary$bic)
+max.adjr2 <- which.max(mod.summary$adjr2)
+```
+
+Let us remember that the previous coefficients are defined as follows:
+$$
+C_{p} = \frac{1}{n} (\text{RSS} + 2d \hat{\sigma}^{2}), \quad
+BIC = \frac{1}{n} (\text{RSS} + \log(n) d \hat{\sigma}^{2}), \quad
+\text{Adj} R^{2} = 1 - \frac{\text{RSS}/(n-d-1)}{\text{TSS}/(n-1)},
+$$
+where $\text{TSS} = \sum (y_{i} - \bar{y})^{2}$ is the total sum of squares.
+
+Now we define a `ggplot2` function to simplify the process of exploring the results:
+```{r}
+plot_statistics <- function(summary, stat, opt.stat, title.str = NULL) {
+	variable <- summary[[tolower(stat)]]
+	
+	gg <- ggplot(tibble(x = seq_along(variable), y = variable)) +
+		geom_line(aes(x = x, y = y)) +
+		geom_point(aes(x = opt.stat, y = variable[opt.stat]), colour = "red") +
+		scale_x_continuous(breaks = seq(1:10)) +
+		labs(x = "Subset Size", y = paste("Best Subset of", stat))
+	
+	if (!is.null(title.str)) {
+		gg <- gg + labs(title = title.str)
+	}
+	
+	return(gg)
+}
+```
+
+Now we compare the three statistics as a function of the subset size:
+```{r}
+ggmatrix(list(plot_statistics(mod.summary, "Cp", min.cp),
+							plot_statistics(mod.summary, "BIC", min.bic),
+							plot_statistics(mod.summary, "AdjR2", max.adjr2)),
+				 nrow = 3, ncol = 1,
+				 yAxisLabels = c("Cp", "BIC", "AdjR2"),
+				 xlab = "Subset Size",
+				 ylab = "Best Subset of",
+				 switch = "both") +
+	theme(strip.background = element_rect(fill = "white"),
+				strip.placement = "outside")
+```
+
+
+As we can see from the results, with $C_{p}$, $BIC$, and adjusted $R^{2}$ criteria, `r min.cp`, `r min.bic`, `r max.adjr2 `-variable models are picked, respectively. The expression for this `r min.cp`-variable and `r min.bic`-variable model are the following, respectively:
+```{r}
+# 4-variable model
+coefficients(mod.full, id = min.cp)
+# 3-variable model
+coefficients(mod.full, id = min.bic)
+```
+
+As we can see, the $BIC$ statistic selects the correct $\beta_{0} + \beta_{1}X + \beta_{2}{X}^{2} + \beta_{3}{X}^{3}$ model, whilst the $C_{p}$ and adjusted $R^{2}$ statistics additionally pick $X^{5}$.
+
+## Exercise 8 (d)
+First of all, we need to fit forward and backward stepwise models to the data using the `regsubsets()` specifying the desired method:
+```{r}
+mod.fwd <- regsubsets(Y ~ poly(X, 10, raw = T), 
+											data = tibble(Y, X), 
+											nvmax = 10,
+											method = "forward")
+mod.bwd <- regsubsets(Y ~ poly(X, 10, raw = T), 
+											data = tibble(Y, X), 
+											nvmax = 10,
+											method = "backward")
+
+```
+
+Now we can get the summary of the best selection using both models:
+```{r}
+(fwd.summary <- summary(mod.fwd))[["outmat"]]
+(bwd.summary <- summary(mod.bwd))[["outmat"]]
+```
+
+As we did before, we find the model or subset size for the best $C_{p}$, $BIC$, and adjusted $R^{2}$ coefficients:
+```{r}
+min.cp.fwd <- which.min(fwd.summary$cp)
+min.bic.fwd <- which.min(fwd.summary$bic)
+max.adjr2.fwd <- which.max(fwd.summary$adjr2)
+```
+```{r}
+min.cp.bwd <- which.min(bwd.summary$cp)
+min.bic.bwd <- which.min(bwd.summary$bic)
+max.adjr2.bwd <- which.max(bwd.summary$adjr2)
+```
+
+```{r}
+ggmatrix(list(# Forward Stepwise
+							plot_statistics(fwd.summary, "Cp", min.cp.fwd),
+							plot_statistics(fwd.summary, "BIC", min.bic.fwd),
+							plot_statistics(fwd.summary, "AdjR2", max.adjr2.fwd),
+							# Backward Stepwise
+							plot_statistics(bwd.summary, "Cp", min.cp.bwd),
+							plot_statistics(bwd.summary, "BIC", min.bic.bwd),
+							plot_statistics(bwd.summary, "AdjR2", max.adjr2.bwd)),
+				 byrow = F,
+				 nrow = 3, ncol = 2,
+				 yAxisLabels = c("Cp", "BIC", "AdjR2"),
+				 xAxisLabels = c("Forward Stepwise", "Backward Stepwise"),
+				 xlab = "Subset Size",
+				 ylab = "Best Subset of",
+				 switch = "both") +
+	theme(strip.background = element_rect(fill = "white"),
+				strip.placement = "outside")
+```
+
+As we can see from the results, using the forward and backward stepwise methods we get the same exact results: the $C_{p}$ and adjusted $R^{2}$ statistics pick $X^{5}$ additionally to $X^{0}$, $X^{1}$, $X^{2}$, and $X^{3}$ whilst for the $BIC$ selects the correct model.
+
+## Exercise 8 (e)
+
+We need the `glmnet` package to use Lasso on the data:
+```{r message=FALSE}
+library(glmnet)
+```
+
+```{r}
+xmat <- model.matrix(Y ~ poly(X, 10, raw = T), 
+										 data = tibble(Y,X))[, -1]
+mod.lasso <- cv.glmnet(xmat, Y, alpha = 1)
+```
+Notice that we use `[, -1]` to get rid of the intercept column.
+
+We can easily find out the optimal $\lambda$:
+```{r}
+best.lambda <- mod.lasso$lambda.min
+```
+
+We can see the Lasso model in the following plot:
+```{r}
+plot(mod.lasso)
+```
+
+
+Now, the final step is to use the `predict()` function with the Lasso model to find the coefficients:
+```{r}
+predict(mod.lasso, s = best.lambda, type="coefficients")
+```
+
+Let us notice that Lasso predicts $\beta_{0} + \beta_{1}X + \beta_{2}{X}^{2} + \beta_{3}{X}^{3} + \beta_{10}{X}^{10}$, but $\beta_{10}$ is almost negligible.
+
+## Exercise 8 (f)
+
+First of all, we create a new $Y$ response with different $\beta_{7} = 7$:
+```{r}
+beta7 <- 7
+Y2 <- beta0 + beta7 * X^7 + epsilon
+```
+
+We can see our function below:
+```{r}
+ggplot(data = tibble(X, Y2)) +
+	geom_point(aes(x = X, y = Y2))
+```
+
+Now we use `regsubsets()` to select best model and perform a summary of the selected models:
+```{r}
+mod2.full <- regsubsets(Y2 ~ poly(X, 10, raw = T), 
+												data = tibble(Y2, X), 
+												nvmax = 10)
+(mod2.summary <- summary(mod2.full))[["outmat"]]
+```
+
+Let us find the model for the best $C_{p}$, $BIC$, and adjusted $R^{2}$ coefficients:
+```{r}
+min2.cp <- which.min(mod2.summary$cp)
+min2.bic <- which.min(mod2.summary$bic)
+max2.adjr2 <- which.max(mod2.summary$adjr2)
+```
+
+```{r}
+ggmatrix(list(plot_statistics(mod2.summary, "Cp", min2.cp),
+							plot_statistics(mod2.summary, "BIC", min2.bic),
+							plot_statistics(mod2.summary, "AdjR2", max2.adjr2)),
+				 nrow = 3, ncol = 1,
+				 yAxisLabels = c("Cp", "BIC", "AdjR2"),
+				 xlab = "Subset Size",
+				 ylab = "Best Subset of",
+				 switch = "both") +
+	theme(strip.background = element_rect(fill = "white"),
+				strip.placement = "outside")
+```
+
+```{r}
+# 2-variable model
+coefficients(mod2.full, id = min2.cp)
+# 1-variable model
+coefficients(mod2.full, id = min2.bic)
+# 4-variable model
+coefficients(mod2.full, id = max2.adjr2)
+```
+What we see from the previous results is that $BIC$ statistic picks the most accurate `r min2.bic`-variable model with matching coefficients, whilst other criteria pick additional variables.
+
+Let us use now use Lasso to find the best model:
+```{r}
+xmat2 <- model.matrix(Y2 ~ poly(X, 10, raw = T), 
+										 data = tibble(Y2, X))[, -1]
+mod2.lasso <-  cv.glmnet(xmat2, Y2, alpha = 1)
+```
+
+Now we find the optimal lambda:
+```{r}
+best2.lambda <- mod2.lasso$lambda.min
+```
+
+```{r}
+best.model2 <- glmnet(xmat2, Y2, alpha = 1)
+predict(best.model2, s = best.lambda, type = "coefficients")
+```
+As we can see, Lasso also picks the best 1-variable model, but the intercept coefficient does not give a good estimation of the real value of $\beta_{0}$. 
+
+As a conclusion, it seems that $BIC$ and Lasso effectively select the 1-variable model, but $BIC$ gives a remarkably better estimation of $\beta_{0}$ and $\beta_{7}$.

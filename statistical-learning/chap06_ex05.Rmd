@@ -1,0 +1,138 @@
+---
+title: 'Chapter 6: Linear Model Selection and Regularisation'
+subtitle: 'An Introduction to Statistical Learning with Applications in R'
+author: "Alfredo Hernández"
+date: "10 April 2018"
+output:
+  html_notebook:
+    toc: yes
+    toc_depth: 3
+---
+
+```{r message=FALSE, include=FALSE}
+library(tidyverse)
+source("../libs/multiplot.R")
+```
+
+# Exercise 5
+	
+It is well-known that Ridge regression tends to give similar coefficient values to correlated variables, whereas the Lasso may give quite different coefficient values to correlated variables. We will now explore this property in a very simple setting.
+
+Suppose that $n = 2$, $p = 2$, $x_{11} = x_{12}$, $x_{21} = x_{22}$. Furthermore, suppose that $y_{1} + y_{2} = 0$ and $x_{11} + x_{21} = 0$ and $x_{12} + x_{22} = 0$, so that the estimate for the intercept in a least squares, Ridge regression, or Lasso model is zero: $\hat{\beta}_{0} = 0$.
+
+(a) Write out the Ridge regression optimisation problem in this setting.
+ 
+(b) Argue that in this setting, the Ridge coefficient estimates satisfy $\hat{\beta}_{1} =\hat{\beta}_{2}$.
+ 
+(c) Write out the Lasso optimisation problem in this setting.
+ 
+(d) Argue that in this setting, the Lasso coefficients $\hat{\beta}_{1}$ and $\hat{\beta}_{2}$ are not unique; in other words, there are many possible solutions to the optimisation problem in (c). Describe these solutions.
+
+<!-- ## Answers -->
+
+## Exercise 5 (a)
+
+A general form of Ridge regression optimisation looks like
+$$
+\text{Minimise:} \quad 
+\sum\limits_{i=1}^{n} {(y_i - \hat{\beta}_0 - \sum\limits_{j=1}^{p} {\hat{\beta}_jx_j} )^2} + \lambda \sum\limits_{j=1}^{p} \hat{\beta}_{j}^{2} .
+$$
+
+In this case, $\hat{\beta}_0 = 0$ and $n = p = 2$. So, the optimisation looks like:
+$$
+\boxed{
+\text{Minimise:} \quad
+(y_1 - \hat{\beta}_1x_{11} - \hat{\beta}_2x_{12})^2 + (y_2 - \hat{\beta}_1x_{21} - \hat{\beta}_2x_{22})^2 + \lambda (\hat{\beta}_1^2 + \hat{\beta}_2^2)
+}.
+$$
+
+## Exercise 5 (b)
+
+First of all, we set $x_{11}=x_{12}=x_1$ and $x_{21}=x_{22}=x_2$. Then, we expand the previous expression; and we take the partial deritive to $\hat{\beta}_1$ and set equation to 0:
+$$
+(\hat{\beta}_1x_1^2-x_1y_1+\hat{\beta}_2x_1^2) + (\hat{\beta}_1x_2^2-x_2y_2+\hat{\beta}_2x_2^2) + \lambda\hat{\beta}_1 = 0
+\\
+\Rightarrow \hat{\beta}_1 (x_1^2+x_2^2) + \hat{\beta}_2 (x_1^2+x_2^2) + \lambda\hat{\beta}_1 = x_1y_1 + x_2y_2 .
+$$
+
+Now we add $2\hat{\beta}_1x_1x_2$ and $2\hat{\beta}_2x_1x_2$ to both sides of the equation:
+
+$$
+\hat{\beta}_1 (x_1^2 + x_2^2 + 2x_1x_2) + \hat{\beta}_2 (x_1^2 + x_2^2 + 2x_1x_2) + \lambda\hat{\beta}_1 
+= x_1y_1 + x_2y_2 + 2\hat{\beta}_1x_1x_2 + 2\hat{\beta}_2x_1x_2 
+\\
+\hat{\beta}_1 (x_1 + x_2)^2 + \hat{\beta}_2 (x_1 + x_2)^2 + \lambda\hat{\beta}_1 
+= x_1y_1 + x_2y_2 + 2\hat{\beta}_1x_1x_2 + 2\hat{\beta}_2x_1x_2 , 
+$$
+
+and because $x_1+x_2=0$, we can eliminate the first two terms:
+
+$$
+\lambda\hat{\beta}_1 = x_1y_1 + x_2y_2 + 2\hat{\beta}_1x_1x_2 + 2\hat{\beta}_2x_1x_2 .
+$$
+
+Likewise by taking the partial deritive to $\hat{\beta}_2$, we can get the equation:
+$$
+\lambda\hat{\beta}_2 = x_1y_1 + x_2y_2 + 2\hat{\beta}_1x_1x_2 + 2\hat{\beta}_2x_1x_2 .
+$$
+
+Finally, we see that the left side of the equations for both $\lambda\hat{\beta}_1$ and $\lambda\hat{\beta}_2$ are the same so we have:
+
+$$
+\lambda\hat{\beta}_1 = \lambda\hat{\beta}_2 
+\Rightarrow 
+\boxed{
+\hat{\beta}_1 = \hat{\beta}_2
+}.
+$$
+
+## Exercise 5 (c)
+
+A general form of Lasso optimisation looks like
+
+$$
+\text{Minimise:} \quad 
+\sum\limits_{i=1}^{n} {(y_i - \hat{\beta}_0 - \sum\limits_{j=1}^{p} {\hat{\beta}_jx_j} )^2} + \lambda \sum\limits_{j=1}^{p} | \hat{\beta_{j}} |.
+$$
+
+For Lasso, like in Ridge regression, we have
+
+$$
+\boxed{
+\text{Minimise:} \quad
+(y_1 - \hat{\beta}_1x_{11} - \hat{\beta}_2x_{12})^2 + (y_2 - \hat{\beta}_1x_{21} - \hat{\beta}_2x_{22})^2 + \lambda (| \hat{\beta}_1 | + | \hat{\beta}_2 |)
+}.
+$$
+
+## Exercise 5 (d)
+
+Here is a geometric interpretation of the solutions for the equation in (c) above. We use the alternate form of Lasso constraints $| \hat{\beta}_1 | + | \hat{\beta}_2 | < s$.
+
+The Lasso constraint takes the form $| \hat{\beta}_1 | + | \hat{\beta}_2 | < s$, which when plotted takes the familiar shape of a diamond centered at origin $(0, 0)$. 
+
+Next consider the squared optimisation constraint $(y_1 - \hat{\beta}_1x_{11} - \hat{\beta}_2x_{12})^2 + (y_2 - \hat{\beta}_1x_{21} - \hat{\beta}_2x_{22})^2$. We use the facts $x_{11} = x_{12}$, $x_{21} = x_{22}$, $x_{11} + x_{21} = 0$, $x_{12} + x_{22} = 0$ and $y_1 + y_2 = 0$ to simplify it to 
+
+$$
+\text{Minimise:} \quad
+2 (y_1 - (\hat{\beta}_1 + \hat{\beta}_2)x_{11})^2 .
+$$
+
+This optimisation problem has a simple solution: $\hat{\beta}_1 + \hat{\beta}_2 = \frac{y_1}{x_{11}}$. This is a line parallel to the edge of Lasso-diamond $\hat{\beta}_1 + \hat{\beta}_2 = s$. Now solutions to the original Lasso optimisation problem are contours of the function $(y_1 - (\hat{\beta}_1 + \hat{\beta}_2)x_{11})^2$ that touch the Lasso-diamond $\hat{\beta}_1 + \hat{\beta}_2 = s$. 
+
+Finally, as $\hat{\beta}_1$ and $\hat{\beta}_2$ vary along the line $\hat{\beta}_1 + \hat{\beta}_2 = \frac{y_1}{x_{11}}$, these contours touch the Lasso-diamond edge $\hat{\beta}_1 + \hat{\beta}_2 = s$ at different points. As a result, the entire edge $\hat{\beta}_1 + \hat{\beta}_2 = s$ is a potential solution to the Lasso optimisation problem.
+
+A similar argument can be made for the opposite Lasso-diamond edge: $\hat{\beta}_1 + \hat{\beta}_2 = -s$. 
+
+Thus, the Lasso problem does not have a unique solution. The general form of solution is given by two line segments:
+
+$$
+\boxed{
+\hat{\beta}_1 + \hat{\beta}_2 = s, \quad \hat{\beta}_1 \geq 0, \, \hat{\beta}_2 \geq 0
+},
+\\
+\text{and}
+\\
+\boxed{
+\hat{\beta}_1 + \hat{\beta}_2 = -s, \quad \hat{\beta}_1 \leq 0, \,  \hat{\beta}_2 \leq 0
+}.
+$$
