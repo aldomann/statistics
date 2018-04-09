@@ -696,9 +696,16 @@ Now we do the same for the $Y$ response vector:
 ```{r}
 Y.train <- Y[train.ind, ]
 Y.test <- Y[-train.ind, ]
-train.df <- tibble(y = Y.train, X.mat.train)
-test.df <- tibble(y = Y.test, X.mat.test)
+train.df <- as_tibble(cbind(y = Y.train, X.mat.train))
+test.df <- as_tibble(cbind(y = Y.test, X.mat.test))
 ```
+
+We will change the names of the columns to ease the identification of the parameters when analysing the different models:
+```{r}
+names(train.df) <- c("y", paste0("β", 1:20))
+names(test.df) <- c("y", paste0("β", 1:20))
+```
+
 
 Let us have a quick glance at the response $Y$ as a scatterplot (just ordered in sequential order):
 ```{r}
@@ -709,11 +716,88 @@ ggplot(data = rbind( cbind(train.df, type = rep("train", nrow(train.df))),
 ```
 
 ### Exercise 10 (c)
+We need the `leaps` package to use the `regsubsets()` function:
+```{r}
+library(leaps)
+```
+
+To calculate the MSE, we will need to use the `regsubsets` method for the `predict()` function:
+```{r}
+predict.regsubsets <- function(object, newdata, id, ...){
+  form <- as.formula(object$call[[2]])
+  mat <- model.matrix(form, newdata)
+  coefi <- coef(object, id=id)
+  xvars <- names(coefi)
+  mat[,xvars]%*%coefi
+}
+```
+
+Now we use `regsubsets()` to select best model for each size:
+```{r}
+regfit.full = regsubsets(y ~ ., data=train.df, nvmax=p)
+
+err.full.train <- rep(NA, p)
+for(i in 1:p) {
+  pred.full <- predict(regfit.full, train.df, id=i)
+  err.full.train[i] <- mean((train.df$y - pred.full)^2)
+}
+```
+
+Let us see the training set MSE associated with the best model of each size. We will use a custom `ggplot2` function:
+```{r}
+plot_mse <- function(error) {
+	ggplot( tibble(num = seq(1:length(error)), error)) +
+		aes(x = num, y = error) +
+		geom_line() +
+		geom_point(colour = "red") +
+		labs(x = "Number of Predictors", y = "MSE")
+}
+```
+
+Let us see the plot:
+```{r}
+plot_mse(err.full.train) + labs(title = "Training Set MSE")
+```
+
+The minimum for train error should be at maximum predictor count:
+```{r}
+which.min(err.full.train) 
+```
 
 ### Exercise 10 (d)
 
+Now we repeat the steps done previously, but now for the test set:
+```{r}
+err.full.test <- rep(NA, p)
+for(i in 1:p) {
+  pred.full <- predict(regfit.full, test.df, id=i)
+  err.full.test[i] <- mean((test.df$y - pred.full)^2)
+}
+```
+
+Let us now see the test set MSE associated with the best model of each size:
+```{r}
+plot_mse(err.full.test) + labs(title = "Test Set MSE")
+```
+
 ### Exercise 10 (e)
+As expected, using the training data we get a model size that falls between using a model with just the intercept or a model containing all the features:
+```{r}
+which.min(err.full.test)
+```
 
 ### Exercise 10 (f)
+Let us now see the coefficients of the response selected by the test set and compare them with the real model:
+```{r}
+coef.best <- coef(regfit.full, id = which.min(err.full.test))
+betas[betas != 0]
+names(betas) <- paste0("β", 1:20)
+
+coefs.df <- merge(tibble(beta = names(betas), betas), 
+									tibble(beta = names(coef.best), coef.best), 
+									all.x = T, sort = F)
+coefs.df
+```
+As we can see, the best subset model successfully selected all the correct predictors, i.e., the following $\beta$: `r which(coefs.df$betas == 0)`.
 
 ### Exercise 10 (g)
