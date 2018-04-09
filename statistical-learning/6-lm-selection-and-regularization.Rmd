@@ -747,12 +747,12 @@ Let us see the training set MSE associated with the best model of each size. We 
 ```{r}
 plot_mse <- function(error) {
 	error.df <- tibble(num = seq(1:length(error)), err = error)
-	min.error <- subset(error.df, err == which.min(error))
-	ggplot(error.df) +
-		aes(x = num, y = error) +
+	min.error.df <- error.df[which.min(error.df$err), ]
+	ggplot(error.df)+
+		aes(x = num, y = err) +
 		geom_line() +
-		geom_point(size = 2) + 
-		# geom_point(data = min.error, colour = "red") +
+		geom_point(size = 2) +
+		geom_point(data = min.error.df, colour = "red", size = 3) +
 		labs(x = "Number of Predictors", y = "MSE")
 }
 ```
@@ -817,12 +817,12 @@ err.coef <- rep(NA, p)
 for (i in 1:p) {
   coef.i <- coef(regfit.full, id=i)
   df.err <- get_coef_df(betas, coef.i)
-  df.err[is.na(df.err[,3]),3] <- 0
-  err.coef[i] <- sqrt(sum((df.err[,2] - df.err[,3])^2))
+  df.err[is.na(df.err[,3]), 3] <- 0
+  err.coef[i] <- sqrt(sum((df.err[, 2] - df.err[, 3])^2))
 }
 ```
 ```{r}
-plot_mse(err.coef)
+plot_mse(err.coef) + labs(y = "Coefficient Error")
 ```
 
 As we can see, the coefficient error plot shows a very similar plot to the test error plot, although the minimum value is more pronounced.
