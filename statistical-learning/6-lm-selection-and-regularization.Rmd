@@ -647,7 +647,7 @@ where $\beta$ has some elements that are exactly equal to zero.
 (f)	
 How does the model at which the test set MSE is minimized compare to the true model used to generate the data? Comment on the coefficient values.
  
-(g) Create a plot displaying $\sqrt{\sum_{j=1}^{p}{(\beta_{j} -\hat{\beta}_{j}^{r})}^{2}}$ for a range of values of $r$, where $\hat{\beta}_{j}^{r}$ is the jth coefficient estimate for the best model containing $r$ coefficients. Comment on what you observe. How does this compare to the test MSE plot from (d)?
+(g) Create a plot displaying $\sqrt{\sum_{j=1}^{p}{(\beta_{j} -\hat{\beta}_{j}^{r})}^{2}}$ for a range of values of $r$, where $\hat{\beta}_{j}^{r}$ is the $j$th coefficient estimate for the best model containing $r$ coefficients. Comment on what you observe. How does this compare to the test MSE plot from (d)?
 
 ## Answers
 
@@ -707,7 +707,7 @@ names(test.df) <- c("y", paste0("β", 1:20))
 ```
 
 
-Let us have a quick glance at the response $Y$ as a scatterplot (just ordered in sequential order):
+Let us have a quick glance at the response $Y$ as a scatter plot (just ordered in sequential order):
 ```{r}
 ggplot(data = rbind( cbind(train.df, type = rep("train", nrow(train.df))),
 										 cbind(test.df, type = rep("test", nrow(test.df)))) ) +
@@ -766,7 +766,7 @@ The minimum for train error should be at maximum predictor count:
 ```{r}
 which.min(err.full.train) 
 ```
-
+	
 ### Exercise 10 (d)
 
 Now we repeat the steps done previously, but now for the test set:
@@ -817,10 +817,13 @@ err.coef <- rep(NA, p)
 for (i in 1:p) {
   coef.i <- coef(regfit.full, id=i)
   df.err <- get_coef_df(betas, coef.i)
-  df.err[is.na(df.err[,3]), 3] <- 0
-  err.coef[i] <- sqrt(sum((df.err[, 2] - df.err[, 3])^2))
+  df.err <- df.err %>% 
+  	mutate(coefs = ifelse(is.na(coefs), 0, coefs) )
+  err.coef[i] <- sqrt(sum((df.err$betas - df.err$coefs)^2))
 }
 ```
+
+Let us see a plot of the coefficient error:
 ```{r}
 plot_mse(err.coef) + labs(y = "Coefficient Error")
 ```
