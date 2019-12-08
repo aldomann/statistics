@@ -1,5 +1,5 @@
 
-# Statistics <img style="border-radius: 8px" src="figures/logo.png" align="right" width="120" />
+# Statistics <img src="figures/logo.png" align="right" width="120" />
 
 <!-- badges: start -->
 
