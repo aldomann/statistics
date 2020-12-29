@@ -1,7 +1,11 @@
 ---
-title: "Chapter:"
-subtitle: "An Introduction to Statistical Learning with Applications in R"
-author: "Alfredo Hernández"
-output: html_notebook
+title: 'Chapter: '
+subtitle: 'An Introduction to Statistical Learning with Applications in R'
+author: "Alfredo Hernández - "
+date: "`r base::format(lubridate::ymd('2021-01-01'),'%d %B %Y')`"
+output: 
+  github_document:
+    fig_width: 8
+    fig_height: 4
 ---
 

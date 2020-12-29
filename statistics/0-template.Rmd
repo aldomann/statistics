@@ -1,0 +1,17 @@
+---
+title: "Chapter:"
+subtitle: "Introductory Statistics with R"
+author: "Alfredo Hernández - "
+date: "`r base::format(lubridate::ymd('2021-01-01'),'%d %B %Y')`"
+output: 
+  github_document:
+    fig_width: 8
+    fig_height: 4
+---
+
+```{r setup, message=FALSE, include=FALSE}
+library(tidyverse)
+
+theme_set(theme_light())
+knitr::opts_chunk$set(fig.align = "center")
+```
