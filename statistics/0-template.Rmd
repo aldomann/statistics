@@ -13,5 +13,5 @@ output:
 library(tidyverse)
 
 theme_set(theme_light())
-knitr::opts_chunk$set(fig.align = "center")
+knitr::opts_chunk$set(fig.align = "center", fig.path = "figures/chapXX_exXX-")
 ```
