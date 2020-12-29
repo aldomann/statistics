@@ -1,21 +1,23 @@
 ---
 title: 'Chapter 6: Linear Model Selection and Regularisation'
 subtitle: 'An Introduction to Statistical Learning with Applications in R'
-author: "Alfredo Hernández"
-date: "10 April 2018"
-output:
-  html_notebook:
-    toc: yes
-    toc_depth: 3
+author: "Alfredo Hernández - "
+date: "`r base::format(lubridate::ymd('2018-04-10'),'%d %B %Y')`"
+output: 
+  github_document:
+    fig_width: 8
+    fig_height: 4
 ---
 
-```{r message=FALSE, include=FALSE}
+```{r setup, message=FALSE, include=FALSE}
 library(tidyverse)
-source("../libs/multiplot.R")
+
+theme_set(theme_light())
+knitr::opts_chunk$set(fig.align = "center", fig.path = "figures/chap06_ex05-")
 ```
 
 # Exercise 5
-	
+
 It is well-known that Ridge regression tends to give similar coefficient values to correlated variables, whereas the Lasso may give quite different coefficient values to correlated variables. We will now explore this property in a very simple setting.
 
 Suppose that $n = 2$, $p = 2$, $x_{11} = x_{12}$, $x_{21} = x_{22}$. Furthermore, suppose that $y_{1} + y_{2} = 0$ and $x_{11} + x_{21} = 0$ and $x_{12} + x_{22} = 0$, so that the estimate for the intercept in a least squares, Ridge regression, or Lasso model is zero: $\hat{\beta}_{0} = 0$.

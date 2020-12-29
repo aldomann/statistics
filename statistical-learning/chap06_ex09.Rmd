@@ -1,17 +1,19 @@
 ---
 title: 'Chapter 6: Linear Model Selection and Regularisation'
 subtitle: 'An Introduction to Statistical Learning with Applications in R'
-author: "Alfredo Hernández"
-date: "10 April 2018"
-output:
-  html_notebook:
-    toc: yes
-    toc_depth: 3
+author: "Alfredo Hernández - "
+date: "`r base::format(lubridate::ymd('2018-04-10'),'%d %B %Y')`"
+output: 
+  github_document:
+    fig_width: 8
+    fig_height: 4
 ---
 
-```{r message=FALSE, include=FALSE}
+```{r setup, message=FALSE, include=FALSE}
 library(tidyverse)
-source("../libs/multiplot.R")
+
+theme_set(theme_light())
+knitr::opts_chunk$set(fig.align = "center", fig.path = "figures/chap06_ex09-")
 ```
 
 # Exercise 9
@@ -47,7 +49,7 @@ Now we can work with the `College` data set and create a `college.train` (50% of
 ```{r}
 set.seed(10)
 college.size <- nrow(College)
-train.ind <- sample(1:college.size, college.size/2)
+train.ind <- sample(1:college.size, college.size / 2)
 
 college.train <- College[train.ind, ]
 college.test <- College[-train.ind, ]
@@ -66,8 +68,8 @@ The RSS for the test data using OLS is `r apps.lm.test.rss`.
 ## Exercise 9 (c)
 Now we want to perform a Ridge regression on the data:
 ```{r}
-xmat.train <- model.matrix(Apps ~ ., data=college.train)[, -1]
-xmat.test <- model.matrix(Apps ~ ., data=college.test)[, -1]
+xmat.train <- model.matrix(Apps ~ ., data = college.train)[, -1]
+xmat.test <- model.matrix(Apps ~ ., data = college.test)[, -1]
 ```
 
 We need the `glmnet` package to use Ridge regression on the data:
@@ -116,13 +118,13 @@ apps.lm$coefficients[abs(apps.lm$coefficients) < 0.05]
 For the shrinkage methods, we will use a custom function to get the coefficients:
 ```{r}
 get_reduced_vars <- function(pred, value) {
-	pred[,1][abs(pred[,1]) < value]
+  pred[, 1][abs(pred[, 1]) < value]
 }
 ```
 
 ```{r}
-ridge.coeffs <- predict(apps.ridge, s = best.lambda.ridge, type="coefficients")
-lasso.coeffs <- predict(apps.lasso, s = best.lambda.lasso, type="coefficients")
+ridge.coeffs <- predict(apps.ridge, s = best.lambda.ridge, type = "coefficients")
+lasso.coeffs <- predict(apps.lasso, s = best.lambda.lasso, type = "coefficients")
 ```
 
 ```{r}
@@ -143,11 +145,16 @@ r2.lasso.test <- 1 - apps.lasso.test.rss / apps.test.tss
 
 Let us see the $R^2$ for the three models:
 ```{r}
-apps.results <- tibble(method = as.factor(c("OLS", "Ridge", "Lasso")),
-											 r2 = c(r2.lm.test, r2.ridge.test, r2.lasso.test))
+apps.results <- tibble(
+  method = as.factor(c("OLS", "Ridge", "Lasso")),
+  r2 = c(r2.lm.test, r2.ridge.test, r2.lasso.test)
+)
+```
+
+```{r gg_apps_results}
 ggplot(apps.results) +
-	geom_point(aes(x = method, y = r2)) +
-	labs(title = "Test R-squared", x = "Method", y = "R-Squared")
+  geom_point(aes(x = method, y = r2)) +
+  labs(title = "Test R-squared", x = "Method", y = "R-Squared")
 ```
 
 The plot shows that test $R^2$ for all models are around 0.9, with Lasso having slightly higher test $R^2$ than OLS and Ridge. We can conclude that all models predict college applications with high accuracy. 

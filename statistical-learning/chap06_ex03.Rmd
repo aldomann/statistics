@@ -1,34 +1,37 @@
 ---
 title: 'Chapter 6: Linear Model Selection and Regularisation'
 subtitle: 'An Introduction to Statistical Learning with Applications in R'
-author: "Alfredo Hernández"
-date: "10 April 2018"
-output:
-  html_notebook:
-    toc: yes
-    toc_depth: 3
+author: "Alfredo Hernández - "
+date: "`r base::format(lubridate::ymd('2018-04-10'),'%d %B %Y')`"
+output: 
+  github_document:
+    fig_width: 8
+    fig_height: 4
 ---
 
-```{r message=FALSE, include=FALSE}
+```{r setup, message=FALSE, include=FALSE}
 library(tidyverse)
-source("../libs/multiplot.R")
+
+theme_set(theme_light())
+knitr::opts_chunk$set(fig.align = "center", fig.path = "figures/chap06_ex03-")
 ```
 
 # Exercise 3
 
 Suppose we estimate the regression coefficients in a linear regression model by minimising
+
 $$
-\sum_{i=1}^{n}\left (y_{i} -\beta_{0} -\sum_{j=1}^{p}\beta_{j}x_{ij}\right )\quad \text{subject to}\quad \sum_{j=1}^{p}\vert \beta_{j}\vert \leq s
+\sum_{i=1}^{n} \left( y_{i} -\beta_{0} -\sum_{j=1}^{p}\beta_{j}x_{ij} \right)\quad \text{subject to}\quad \sum_{j=1}^{p}\vert \beta_{j}\vert \leq s
 $$
 
 for a particular value of $s$. For parts (a) through (e), indicate which of i. through v. is correct. Justify your answer.
 
 (a) As we increase $s$ from 0, the training RSS will:
-	i. Increase initially, and then eventually start decreasing in an inverted U shape.
-	ii. Decrease initially, and then eventually start increasing in a U shape.
-	iii. Steadily increase.
-	iv. Steadily decrease.
-	v. Remain constant.
+  i. Increase initially, and then eventually start decreasing in an inverted U shape.
+  ii. Decrease initially, and then eventually start increasing in a U shape.
+  iii. Steadily increase.
+  iv. Steadily decrease.
+  v. Remain constant.
 
 (b) Repeat (a) for test RSS.
  
